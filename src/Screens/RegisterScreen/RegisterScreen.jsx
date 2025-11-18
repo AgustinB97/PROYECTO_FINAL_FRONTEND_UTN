@@ -71,7 +71,6 @@ const RegisterScreen = () => {
                         ? <button disabled>Registrando</button>
                         : <button>Registrarse</button>
                 }
-
             </form>
         </div>
     )
