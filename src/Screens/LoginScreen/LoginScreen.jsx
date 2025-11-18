@@ -57,7 +57,7 @@ const LoginScreen = () => {
           if(response && response.ok){
             //Queremos que persista en memoria el auth token
             //Dejamos que el context se encargue de que sucedera
-            onLogin(response.body.auth_token)
+            onLogin(response.auth_token, response.user)
             
           }
         },
@@ -68,12 +68,12 @@ const LoginScreen = () => {
         <form onSubmit={handleSubmit}>
           <div className="form-field">
             <label htmlFor="email">Email: </label>
-            <input  type="text" placeholder="jose@algo.com" value={form_state[LOGIN_FORM_FIELDS.EMAIL]} name={LOGIN_FORM_FIELDS.EMAIL} onChange={onInputChange} id={'email'} />
+            <input  type="text" placeholder="agus@algo.com" value={form_state[LOGIN_FORM_FIELDS.EMAIL]} name={LOGIN_FORM_FIELDS.EMAIL} onChange={onInputChange} id={'email'} />
           </div>
 
           <div>
             <label htmlFor="password">Password: </label>
-            <input type="text" placeholder="Josesito206" value={form_state[LOGIN_FORM_FIELDS.PASSWORD]} name={LOGIN_FORM_FIELDS.PASSWORD} onChange={onInputChange} id={'password'} />
+            <input type="text" placeholder="agus206" value={form_state[LOGIN_FORM_FIELDS.PASSWORD]} name={LOGIN_FORM_FIELDS.PASSWORD} onChange={onInputChange} id={'password'} />
           </div>
 
           {error && <span style={{ color: 'red' }}> {error} </span>}
@@ -85,6 +85,7 @@ const LoginScreen = () => {
               : <button>Login</button>
           }
         </form>
+        <a href="../Register">registrate</a>
       </div>
       )
 }

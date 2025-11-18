@@ -1,70 +1,64 @@
-import { createContext,  useEffect, useState } from "react";
-import { decodeToken } from "react-jwt";
+import { createContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
+import { decodeToken } from "react-jwt";
 
 export const AuthContext = createContext()
 
-const AuthContextProvider = ({children}) => {
+const AuthContextProvider = ({ children }) => {
 
-    //Configuramos para hacer mas adelante redirecciones
     const navigate = useNavigate()
 
-    //ESTADO CON: Datos de sesion
     const [user, setUser] = useState(null)
-
-    //ESTADO: Marca si esta o no logueado el usuario
-    const [ isLogged, setIsLogged ] = useState( Boolean(localStorage.getItem('auth_token')) )
-
-
-    //Una vez se monte el componente decodificar el token y guardar los datos de sesion
-    useEffect(
-        () => {
-            if(!localStorage.getItem('auth_token')){
-                setIsLogged(false)
-                setUser(null)
-                return 
-            }
-            const user = decodeToken(localStorage.getItem('auth_token'))
-            if(user){
-                setUser(user)
-                setIsLogged(true)
-            }
-            else{
-                setIsLogged(false)
-                setUser(null)
-            }
-        },
-        []
+    const [isLogged, setIsLogged] = useState(
+        Boolean(localStorage.getItem('auth_token'))
     )
 
-    function onLogout(){
+    useEffect(() => {
+        const token = localStorage.getItem("auth_token");
+
+        if (!token) {
+            setIsLogged(false);
+            setUser(null);
+            return;
+        }
+
+        const user_session = decodeToken(token);
+
+        if (!user_session) {
+            setIsLogged(false);
+            setUser(null);
+            return;
+        }
+
+        setIsLogged(true);
+        setUser(user_session);
+    }, []);
+
+
+    function onLogout() {
         localStorage.removeItem('auth_token')
+        localStorage.removeItem('user')
         setIsLogged(false)
         setUser(null)
-        //Si quieren pueden redireccionar a login
         navigate('/login')
     }
 
-    function onLogin (auth_token){
+    // 🔥 AHORA RECIBE EL TOKEN + EL USER COMPLETO
+    function onLogin(auth_token, userData) {
         localStorage.setItem('auth_token', auth_token)
+        localStorage.setItem('user', JSON.stringify(userData))
+
         setIsLogged(true)
-        const user_session = decodeToken(auth_token)
-        setUser(user_session)
+        setUser(userData)
+
         navigate('/home')
     }
 
-
-
-    return <AuthContext.Provider
-        value={{
-            isLogged,
-            user,
-            onLogin, 
-            onLogout
-        }}
-    >
-        {children}
-    </AuthContext.Provider>
+    return (
+        <AuthContext.Provider value={{ isLogged, user, onLogin, onLogout }}>
+            {children}
+        </AuthContext.Provider>
+    )
 }
 
 export default AuthContextProvider

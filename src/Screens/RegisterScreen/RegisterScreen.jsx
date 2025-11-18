@@ -10,13 +10,15 @@ const RegisterScreen = () => {
     const REGISTER_FORM_FIELDS = {
         USERNAME: 'username',
         EMAIL: 'email',
-        PASSWORD: 'password'
+        PASSWORD: 'password',
+        AVATAR: 'avatar'
     }
     //guardamos el valor del estado inicial del form
     const initial_form_state = {
         [REGISTER_FORM_FIELDS.USERNAME]: '',
         [REGISTER_FORM_FIELDS.EMAIL]: '',
-        [REGISTER_FORM_FIELDS.PASSWORD]: ''
+        [REGISTER_FORM_FIELDS.PASSWORD]: '',
+        [REGISTER_FORM_FIELDS.AVATAR]: ''
     }
 
     const { response, error, loading, sendRequest } = useFetch()
@@ -27,7 +29,8 @@ const RegisterScreen = () => {
                 return register(
                     form_state_sent[REGISTER_FORM_FIELDS.USERNAME],
                     form_state_sent[REGISTER_FORM_FIELDS.EMAIL],
-                    form_state_sent[REGISTER_FORM_FIELDS.PASSWORD]
+                    form_state_sent[REGISTER_FORM_FIELDS.PASSWORD],
+                    form_state_sent[REGISTER_FORM_FIELDS.AVATAR]
                 )
             })
     }
@@ -56,6 +59,10 @@ const RegisterScreen = () => {
                 <div className="form-field">
                     <label htmlFor="password">Contrasenia:</label>
                     <input type="text" placeholder='password123' value={form_state[REGISTER_FORM_FIELDS.PASSWORD]} name={REGISTER_FORM_FIELDS.PASSWORD} id={'password'} onChange={onInputChange} />
+                </div>
+                <div className="form-field">
+                    <label htmlFor="avatar">Avatar:</label>
+                    <input type="text" placeholder='avatar' value={form_state[REGISTER_FORM_FIELDS.AVATAR]} name={REGISTER_FORM_FIELDS.AVATAR} id={''} onChange={onInputChange} />
                 </div>
                 {error && <span style={{ color: 'red' }}>{error}</span>}
                 {response && <span style={{ color: 'green' }}>Usuario registrado con exito</span>}

@@ -1,24 +1,37 @@
-import { useState } from "react";
+/* import { useState, useRef } from "react";
+
 import { Chess } from "chess.js";
 import { Chessboard } from "react-chessboard";
 
 const HomeScreen = () => {
-    const [game, setGame] = useState(new Chess());
+    // 🔒 Mantiene la instancia del juego entre renders
+    const chess = useRef(new Chess());
+    const [position, setPosition] = useState(chess.current.fen());
 
     const onDrop = (sourceSquare, targetSquare) => {
-        const newGame = new Chess(game.fen());
-        const move = newGame.move({
+        console.log("onDrop:", sourceSquare, "->", targetSquare);
+        const move = chess.current.move({
             from: sourceSquare,
             to: targetSquare,
-            promotion: "q", // siempre promover a reina
+            promotion: "q",
         });
 
-        if (move === null) return false;
-        setGame(newGame);
+        if (move === null) {
+            console.log("❌ Movimiento inválido");
+            return false;
+        }
+
+        console.log("✅ Movimiento válido:", move);
+        setPosition(chess.current.fen());
         return true;
     };
 
-    const resetGame = () => setGame(new Chess());
+    const resetGame = () => {
+        chess.current = new Chess();
+        setPosition(chess.current.fen());
+    };
+
+    console.log("♟️ Render HomeScreen - FEN:", position);
 
     return (
         <div
@@ -46,18 +59,11 @@ const HomeScreen = () => {
                 }}
             >
                 <Chessboard
-                    position={game.fen()}
-                    onPieceDrop={onDrop}
-                    boardWidth={window.innerWidth < 600 ? 300 : 500}
-                    arePiecesDraggable={true}
+                    position={position}
+                    onDrop={onDrop}
+                    boardWidth={window.innerWidth < 600 ? 320 : 500}
                 />
             </div>
-
-            {game.isGameOver() && (
-                <p style={{ marginTop: "15px", color: "#ff7676", fontWeight: "bold" }}>
-                    {game.isCheckmate() ? "¡Jaque Mate!" : "Partida terminada."}
-                </p>
-            )}
 
             <button
                 onClick={resetGame}
@@ -79,3 +85,5 @@ const HomeScreen = () => {
 };
 
 export default HomeScreen;
+ */
+
