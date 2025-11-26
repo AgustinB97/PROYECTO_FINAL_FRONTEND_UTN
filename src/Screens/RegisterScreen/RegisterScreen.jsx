@@ -71,7 +71,7 @@ const formData = new FormData();
                     <label htmlFor="avatar-image">Cargar Avatar:</label>
                     <input type="file" accept="image/*" placeholder='avatar-image' onChange={(e) => setAvatarFile(e.target.files[0])}
                     />
-                </div>
+                </div> *
                 {error && <span style={{ color: 'red' }}>{error}</span>}
                 {response && <span style={{ color: 'green' }}>Usuario registrado con exito</span>}
                 {
