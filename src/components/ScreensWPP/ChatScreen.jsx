@@ -5,6 +5,7 @@ import { SocketContext } from "../../Context/SocketContext";
 import { ChatContext } from "../../Context/ChatContext";
 import ENVIRONMENT from "../../config/enviroment";
 
+
 const ChatScreen = () => {
     const { id: chatId } = useParams();
     const { user } = useContext(AuthContext);
@@ -29,12 +30,10 @@ const ChatScreen = () => {
                 let c = data.chat;
                 if (!c) return;
 
-
                 if (!c.isGroup) {
                     const other = Array.isArray(c.members)
                         ? c.members.find((m) => String(m._id) !== String(user._id))
                         : null;
-
                     c = {
                         ...c,
                         name: other?.username || "Usuario",
@@ -45,9 +44,8 @@ const ChatScreen = () => {
                 setChat(c);
                 setMessages(Array.isArray(data.messages) ? data.messages : []);
 
-
-                setChats(prev =>
-                    prev.map(ch =>
+                setChats((prev) =>
+                    prev.map((ch) =>
                         ch._id === chatId
                             ? { ...ch, last_message: data.messages.slice(-1)[0] || null }
                             : ch
@@ -66,16 +64,13 @@ const ChatScreen = () => {
         const socket = socketRef.current;
         if (!socket || !chatId) return;
 
-        socket.emit("join_chat", chatId);
-
         const handleNewMessage = (msg) => {
-            const id = msg.chatId._id || msg.chatId;
-            if (id !== chatId) return;
+            const id = msg.chatId?._id || msg.chatId;
+            if (!id || id !== chatId) return;
 
-            setMessages(prev => [...prev, msg]);
-
-            setChats(prev =>
-                prev.map(ch =>
+            setMessages((prev) => [...prev, msg]);
+            setChats((prev) =>
+                prev.map((ch) =>
                     ch._id === chatId ? { ...ch, last_message: msg } : ch
                 )
             );
@@ -84,10 +79,9 @@ const ChatScreen = () => {
         const handleDeleteMessage = ({ messageId, chatId: deletedChatId, last_message }) => {
             if (deletedChatId !== chatId) return;
 
-            setMessages(prev => prev.filter(m => m._id !== messageId));
-
-            setChats(prev =>
-                prev.map(ch =>
+            setMessages((prev) => prev.filter((m) => m._id !== messageId));
+            setChats((prev) =>
+                prev.map((ch) =>
                     ch._id === chatId ? { ...ch, last_message: last_message || null } : ch
                 )
             );
@@ -108,102 +102,38 @@ const ChatScreen = () => {
         if (!value.trim()) return;
 
         const socket = socketRef.current;
-
-
-        const optimistic = {
+        const tempMessage = {
             sender: { _id: user._id },
             content: value,
             chatId,
             createdAt: new Date().toISOString(),
         };
 
-        setMessages(prev => [...prev, optimistic]);
+        setMessages((prev) => [...prev, tempMessage]);
         setValue("");
 
-        const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/message`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                chatId,
-                senderId: user._id,
-                content: value,
-            }),
-        });
-
-        const saved = await res.json();
-
-        if (saved.ok && socket)
-            socket.emit("send_message", saved.message);
-    };
-
-
-    const deleteMessage = async (messageId) => {
-        const socket = socketRef.current;
-
         try {
-            const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/message/${messageId}`, {
-                method: "DELETE",
+            const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/message`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ chatId, senderId: user._id, content: value }),
             });
+            const saved = await res.json();
+            if (saved.ok && socket) socket.emit("send_message", saved.message);
 
-            const data = await res.json();
-            if (!data.ok) return alert(data.message);
-
-            setMessages(prev => prev.filter(m => m._id !== messageId));
-
-            if (socket)
-                socket.emit("delete_message", { messageId, chatId: chat._id });
-
+            setMessages((prev) =>
+                prev.map((m) =>
+                    m === tempMessage ? { ...m, _id: saved.message._id } : m
+                )
+            );
         } catch (err) {
-            console.error("Error eliminando mensaje:", err);
+            console.error("Error enviando mensaje:", err);
         }
-    };
-
-
-    useEffect(() => {
-        if (!isGroupSettings) return;
-
-        async function loadAllUsers() {
-            try {
-                const res = await fetch(`${ENVIRONMENT.URL_API}/api/users`);
-                const data = await res.json();
-
-                if (data.ok) setAllUsers(data.users);
-            } catch (err) {
-                console.error("Error cargando usuarios:", err);
-            }
-        }
-
-        loadAllUsers();
-    }, [isGroupSettings]);
-
-
-    const addUserToGroup = async (userId) => {
-        const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/${chatId}/add-user`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId }),
-        });
-
-        const data = await res.json();
-        if (data.ok) setChat(data.group);
-        else alert(data.message);
-    };
-
-    const removeUserFromGroup = async (userId) => {
-        const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/${chatId}/remove-user`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId }),
-        });
-
-        const data = await res.json();
-        if (data.ok) setChat(data.group);
-        else alert(data.message);
     };
 
     if (!chat) return <p>Cargando chat...</p>;
 
-    const isAdmin = chat.admins?.some(a => String(a._id) === String(user._id));
+    const isAdmin = chat.admins?.some((a) => String(a._id) === String(user._id));
 
     return (
         <div className="chat-screen">

@@ -21,24 +21,25 @@ export const ChatProvider = ({ children }) => {
         });
     }, [user]);
 
-
     useEffect(() => {
-        if (!socketRef.current || !user?._id) return;
-
         const socket = socketRef.current;
+        if (!socket || !user?._id) return;
 
         socket.emit("join_user", user._id);
-        chats.forEach(chat => socket.emit("join_chat", chat._id));
-    }, [socketRef, user, chats]);
+
+        chats.forEach(chat => {
+            socket.emit("join_chat", chat._id);
+        });
+
+    }, [user, chats]);
 
     useEffect(() => {
-        if (!socketRef.current) return;
-
         const socket = socketRef.current;
+        if (!socket) return;
 
         const handleNewChat = (chat) => {
             setChats(prev => {
-                if (prev.find(c => c._id === chat._id)) return prev;
+                if (prev.some(c => c._id === chat._id)) return prev;
                 return [chat, ...prev];
             });
         };
@@ -47,13 +48,13 @@ export const ChatProvider = ({ children }) => {
             const chatId = msg.chatId._id || msg.chatId;
 
             setChats(prev => {
-                let exists = prev.find(c => c._id === chatId);
+                const exists = prev.find(c => c._id === chatId);
 
                 if (!exists) {
                     const newChat = {
                         _id: chatId,
                         members: msg.chatId.members || [],
-                        isGroup: msg.chatId.isGroup || false,
+                        isGroup: msg.chatId.isGroup,
                         name: msg.chatId.name || null,
                         last_message: msg
                     };
@@ -73,7 +74,9 @@ export const ChatProvider = ({ children }) => {
         const handleMessageDeleted = ({ chatId, last_message }) => {
             setChats(prev =>
                 prev.map(c =>
-                    c._id === chatId ? { ...c, last_message: last_message || null } : c
+                    c._id === chatId
+                        ? { ...c, last_message: last_message || null }
+                        : c
                 )
             );
         };
@@ -87,7 +90,8 @@ export const ChatProvider = ({ children }) => {
             socket.off("receive_message", handleReceiveMessage);
             socket.off("message_deleted", handleMessageDeleted);
         };
-    }, [socketRef]);
+
+    }, []);
 
     return (
         <ChatContext.Provider value={{
