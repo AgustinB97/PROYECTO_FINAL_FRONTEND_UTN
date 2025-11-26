@@ -2,17 +2,18 @@ import { Outlet } from 'react-router-dom';
 import ContactScreen from "../ScreensWPP/ContactScreen";
 import React from 'react';
 
-const InTheSamePage = ({ contactList, addMessage, deleteMessage }) => {
+const InTheSamePage = () => {
     return (
         <div className='handle-screens'>
             <div className='contacScreen-container'>
-                <ContactScreen contactList={contactList} />
+                <ContactScreen />
             </div>
+
             <div className='outlet-container'>
-                <Outlet context={{contactList, addMessage, deleteMessage}} />
+                <Outlet />
             </div>
         </div>
     );
 }
 
-export default InTheSamePage
+export default InTheSamePage;

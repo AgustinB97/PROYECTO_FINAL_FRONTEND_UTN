@@ -4,7 +4,7 @@ import { decodeToken } from "react-jwt";
 
 export const AuthContext = createContext()
 
-const AuthContextProvider = ({ children }) => {
+export const AuthContextProvider = ({ children }) => {
 
     const navigate = useNavigate()
 
@@ -43,7 +43,6 @@ const AuthContextProvider = ({ children }) => {
         navigate('/login')
     }
 
-    // 🔥 AHORA RECIBE EL TOKEN + EL USER COMPLETO
     function onLogin(auth_token, userData) {
         localStorage.setItem('auth_token', auth_token)
         localStorage.setItem('user', JSON.stringify(userData))
@@ -55,10 +54,10 @@ const AuthContextProvider = ({ children }) => {
     }
 
     return (
-        <AuthContext.Provider value={{ isLogged, user, onLogin, onLogout }}>
+        <AuthContext.Provider value={{ isLogged, user, setUser, onLogin, onLogout }}>
             {children}
         </AuthContext.Provider>
     )
 }
 
-export default AuthContextProvider
+

@@ -1,133 +1,299 @@
 import React, { useState, useEffect, useContext } from "react";
-import { useParams, useOutletContext } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { AuthContext } from "../../Context/AuthContext";
+import { SocketContext } from "../../Context/SocketContext";
+import { ChatContext } from "../../Context/ChatContext";
+import ENVIRONMENT from "../../config/enviroment";
 
 const ChatScreen = () => {
-	const { contactList } = useOutletContext();
-	const { id } = useParams();
+    const { id: chatId } = useParams();
+    const { user } = useContext(AuthContext);
+    const { socket } = useContext(SocketContext);
+    const { chats, setChats } = useContext(ChatContext);
+    const [chat, setChat] = useState(null);
+    const [messages, setMessages] = useState([]);
+    const [value, setValue] = useState("");
+    const [isGroupSettings, setIsGroupSettings] = useState(false);
+    const [allUsers, setAllUsers] = useState([]);
 
-	const { user, isLogged } = useContext(AuthContext);
+    useEffect(() => {
+        if (!chatId || !user) return;
 
-	const contactId = id;                    // 🔥 ID del contacto (string, MongoId)
-	const userId = user?._id;                // 🔥 El ID real del usuario desde el token
+        async function loadChat() {
+            try {
+                const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/${chatId}`);
+                const data = await res.json();
+                if (!data.ok) return console.error(data.message);
 
-	const contact = contactList.find(c => c.id === contactId);
+                let c = data.chat;
+                if (!c) return;
 
-	const [messages, setMessages] = useState([]);
-	const [value, setValue] = useState("");
+                if (!c.isGroup) {
+                    const other = Array.isArray(c.members)
+                        ? c.members.find((m) => String(m._id) !== String(user._id))
+                        : null;
 
-	if (!isLogged || !user) {
-		return <div>Cargando usuario...</div>;
-	}
+                    c = {
+                        ...c,
+                        name: other?.username || "Usuario",
+                        avatar: other?.avatar || "/default-avatar.png",
+                    };
+                }
 
-	if (!contact) {
-		return <div>No se encontró este contacto.</div>;
-	}
+                setChat(c);
+                setMessages(Array.isArray(data.messages) ? data.messages : []);
 
-	// 🔥 1 — Cargar la conversación cuando entra al chat
-	useEffect(() => {
-		async function loadMessages() {
-			try {
-				const res = await fetch(
-					`http://localhost:8080/api/chat/${userId}/${contactId}`
-				);
+                setChats(prev => prev.map(ch =>
+                    ch._id === chatId
+                        ? { ...ch, last_message: data.messages.slice(-1)[0] || null }
+                        : ch
+                ));
 
-				const data = await res.json();
-				if (data.ok) {
-					setMessages(data.messages);
-				}
-			} catch (error) {
-				console.error("Error cargando mensajes:", error);
-			}
-		}
+            } catch (e) {
+                console.error("Error cargando chat:", e);
+            }
+        }
 
-		loadMessages();
-	}, [contactId, userId]);
+        loadChat();
+    }, [chatId, user, setChats]);
 
-	// 🔥 2 — Enviar mensaje
-	const sendMessage = async (e) => {
-		e.preventDefault();
-		if (!value.trim()) return;
+    useEffect(() => {
+        if (!socket || !chatId) return;
 
-		const tempMessage = {
-			senderId: userId,
-			receiverId: contactId,
-			content: value,
-			hour: new Date().toLocaleTimeString(["es-AR"], {
-				hour: "2-digit",
-				minute: "2-digit",
-			})
-		}
-		// Actualizar frontend
-		addLastMessage(contactId, {
-			text: value,
-			hour: new Date().toLocaleTimeString(['es-AR'], {
-				hour: "2-digit",
-				minute: "2-digit"
-			})
-		});
+        socket.emit("join_chat", chatId);
 
-		;
+        const handleNewMessage = (msg) => {
+            if (msg.chatId === chatId) {
+                setMessages(prev => [...prev, msg]);
 
-		// 🔥 UI instantánea
-		setMessages(prev => [...prev, tempMessage]);
 
-		// 🔥 Guardar en backend
-		await fetch("http://localhost:8080/api/chat/message", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({
-				senderId: userId,
-				receiverId: contactId,
-				content: value
-			}),
-		});
+                setChats(prev => prev.map(ch =>
+                    ch._id === chatId
+                        ? { ...ch, last_message: msg }
+                        : ch
+                ));
+            }
+        };
 
-		setValue("");
-	};
+        const handleDeleteMessage = ({ messageId, chatId: deletedChatId, last_message }) => {
+            if (deletedChatId !== chatId) return;
 
-	return (
-		<div className="chat-screen">
-			{/* ------- NAV ------- */}
-			<div className="contact-nav">
-				<div className="contact-nav__avatar-name">
-					<img className="contact-nav__avatar" src={contact.avatar} alt="" />
-					<h3 className="contact-nav__name">{contact.name}</h3>
-				</div>
-			</div>
+            setMessages(prev => prev.filter(m => m._id !== messageId));
 
-			{/* ------- CHAT ------- */}
-			<div className="chat">
-				<ul className="chat-list">
-					{messages.map((msg, index) => (
-						<li
-							key={index}
-							className={`message ${msg.senderId === userId ? "message__me" : "message__other"
-								}`}
-						>
-							{msg.content} {msg.hour}
-						</li>
-					))}
-				</ul>
+            setChats(prevChats => prevChats.map(ch =>
+                ch._id === chatId
+                    ? { ...ch, last_message: last_message || null }
+                    : ch
+            ));
 
-				{/* ------- INPUT ------- */}
-				<div className="send-message">
-					<form className="send-message__form" onSubmit={sendMessage}>
-						<input
-							className="send-message__input"
-							type="text"
-							value={value}
-							onChange={(e) => setValue(e.target.value)}
-							placeholder="Escribe un mensaje"
-						/>
-						<button className="send-message__send-btn" type="submit">
-							Enviar
-						</button>
-					</form>
-				</div>
-			</div>
-		</div>
-	);
+            ;
+        };
+
+        socket.on("receive_message", handleNewMessage);
+        socket.on("message_deleted", handleDeleteMessage);
+
+        return () => {
+            socket.off("receive_message", handleNewMessage);
+            socket.off("message_deleted", handleDeleteMessage);
+        };
+    }, [socket, chatId, setChats]);
+
+
+    const sendMessage = async (e) => {
+        e.preventDefault();
+        if (!value.trim()) return;
+
+        const optimistic = {
+            sender: { _id: user._id },
+            content: value,
+            chatId,
+            createdAt: new Date().toISOString(),
+        };
+
+        setMessages(prev => [...prev, optimistic]);
+        setValue("");
+
+        const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/message`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                chatId,
+                senderId: user._id,
+                content: value,
+            }),
+        });
+
+        const saved = await res.json();
+        if (saved.ok) socket.emit("send_message", saved.message);
+    };
+
+
+    const deleteMessage = async (messageId) => {
+        try {
+            const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/message/${messageId}`, {
+                method: "DELETE",
+            });
+
+            const data = await res.json();
+            if (!data.ok) {
+                alert(data.message);
+                return;
+            }
+
+
+            setMessages(prev => prev.filter(m => m._id !== messageId));
+
+
+            socket.emit("delete_message", { messageId, chatId: chat._id });
+
+        } catch (err) {
+            console.error("Error eliminando mensaje:", err);
+        }
+    };
+
+
+    useEffect(() => {
+        if (!isGroupSettings) return;
+
+        async function loadAllUsers() {
+            try {
+                const res = await fetch(`${ENVIRONMENT.URL_API}/api/users`);
+                const data = await res.json();
+
+                if (!data.ok) return;
+
+                setAllUsers(data.users);
+            } catch (err) {
+                console.error("Error cargando usuarios:", err);
+            }
+        }
+
+        loadAllUsers();
+    }, [isGroupSettings]);
+
+
+    const addUserToGroup = async (userId) => {
+        const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/${chatId}/add-user`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId }),
+        });
+
+        const data = await res.json();
+        if (data.ok) setChat(data.group);
+        else alert(data.message);
+    };
+
+
+    const removeUserFromGroup = async (userId) => {
+        const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/${chatId}/remove-user`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId }),
+        });
+
+        const data = await res.json();
+        if (data.ok) setChat(data.group);
+        else alert(data.message);
+    };
+
+    if (!chat) return <p>Cargando chat...</p>;
+    const isAdmin = chat.admins?.some(a => String(a._id) === String(user._id));
+
+    return (
+        <div className="chat-screen">
+            {/* HEADER */}
+            <div className="contact-nav">
+                <div className="contact-nav__avatar-name">
+                    <img src={chat.avatar || "/default-avatar.png"} className="contact-nav__avatar" alt="avatar" />
+                    <h3 className="contact-nav__name">{chat.name}</h3>
+                </div>
+                {chat.isGroup && isAdmin && (
+                    <button className="group-settings-btn" onClick={() => setIsGroupSettings(prev => !prev)}>⚙️</button>
+                )}
+            </div>
+
+            {/* CHAT / SETTINGS */}
+            {isGroupSettings ? (
+                <div className="group-settings">
+
+                    <h2 className="group-settings-title">Configuración del grupo</h2>
+
+                    {/* MIEMBROS */}
+                    <h3 className="group-settings-subtitle">Miembros</h3>
+                    {chat.members.map((m) => (
+                        <div key={m._id} className="group-user-row">
+                            <img src={m.avatar} className="group-user-avatar" />
+                            <span className="group-user-name">{m.username}</span>
+
+                            {m._id !== user._id && (
+                                <button
+                                    onClick={() => removeUserFromGroup(m._id)}
+                                    className="group-btn remove-btn"
+                                >
+                                    ❌
+                                </button>
+                            )}
+                        </div>
+                    ))}
+
+                    {/* AÑADIR USUARIOS */}
+                    <h3 className="group-settings-subtitle">Añadir usuarios</h3>
+                    {allUsers
+                        .filter((u) => !chat.members.some((m) => m._id === u._id))
+                        .map((u) => (
+                            <div key={u._id} className="group-user-row">
+                                <img src={u.avatar} className="group-user-avatar" />
+                                <span className="group-user-name">{u.username}</span>
+
+                                <button
+                                    onClick={() => addUserToGroup(u._id)}
+                                    className="group-btn add-btn"
+                                >
+                                    ➕
+                                </button>
+                            </div>
+                        ))}
+                </div>
+            ) : (
+                <>
+                    <div className="chat">
+                        <ul className="chat-list">
+                            {messages.map((msg, index) => {
+                                const isMine = (msg.sender?._id ?? msg.sender) === user._id;
+                                return (
+                                    <li key={index} className={`message ${isMine ? "message__me" : "message__other"}`}>
+                                        {!isMine && chat?.isGroup && msg.sender?.avatar && (
+                                            <img src={msg.sender.avatar} className="msg-avatar" alt="avatar" />
+                                        )}
+                                        <div className="msg-bubble">{msg.content}</div>
+                                        <span className="message-hour">
+                                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                                        </span>
+                                        {isMine && (
+                                            <button className="delete-message-btn" disabled={!msg._id} onClick={() => deleteMessage(msg._id)}>🗑</button>
+                                        )}
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    </div>
+
+                    <div className="send-message">
+                        <form className="send-message__form" onSubmit={sendMessage}>
+                            <input
+                                className="send-message__input"
+                                value={value}
+                                onChange={(e) => setValue(e.target.value)}
+                                placeholder="Escribe un mensaje"
+                            />
+                            <button type="submit" className="send-message__send-btn">Enviar</button>
+                        </form>
+                    </div>
+                </>
+            )}
+        </div>
+    );
 };
 
 export default ChatScreen;
