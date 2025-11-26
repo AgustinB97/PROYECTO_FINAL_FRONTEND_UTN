@@ -3,7 +3,7 @@ import ENVIRONMENT from "../config/enviroment.js";
 export async function register(formData) {
     try {
         const response_http = await fetch(
-            ENVIRONMENT.URL_API + "/api/auth/register",
+            "https://proyecto-final-backend-utn-three.vercel.app/api/auth/register",
             {
                 method: "POST",
                 body: formData
@@ -26,7 +26,7 @@ export async function login(email, password) {
         const body = { email, password };
 
         const response_http = await fetch(
-            ENVIRONMENT.URL_API + "/api/auth/login",
+            "https://proyecto-final-backend-utn-three.vercel.app/api/auth/login",
             {
                 method: "POST",
                 headers: {
