@@ -97,7 +97,7 @@ const LoginScreen = () => {
         )}
       </form>
 
-      <a href="../Register">Registrate</a>
+      <button onClick={() => navigate("/register")}>Registrate</button>
     </div>
   );
 };

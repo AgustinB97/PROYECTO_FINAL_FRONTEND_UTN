@@ -2,10 +2,13 @@ import React, { useState } from "react";
 import useForm from "../../hooks/useForm.jsx";
 import { register } from "../../services/authServices.js";
 import useFetch from "../../hooks/useFetch.jsx";
+import { useNavigate } from "react-router";
+
 
 
 
 const RegisterScreen = () => {
+    const navigate = useNavigate();
     const REGISTER_FORM_FIELDS = {
         USERNAME: 'username',
         EMAIL: 'email',
@@ -23,21 +26,21 @@ const RegisterScreen = () => {
     const { response, error, loading, sendRequest } = useFetch()
 
     const onRegister = (form_state_sent) => {
-const formData = new FormData();
-    formData.append("username", form_state_sent.username);
-    formData.append("email", form_state_sent.email);
-    formData.append("password", form_state_sent.password);
+        const formData = new FormData();
+        formData.append("username", form_state_sent.username);
+        formData.append("email", form_state_sent.email);
+        formData.append("password", form_state_sent.password);
 
-    if (avatarFile) {
-        formData.append("avatar", avatarFile);
-    }
+        if (avatarFile) {
+            formData.append("avatar", avatarFile);
+        }
 
-    if (form_state_sent.avatarUrl && !avatarFile) {
-        formData.append("avatarUrl", form_state_sent.avatarUrl);
-    }
+        if (form_state_sent.avatarUrl && !avatarFile) {
+            formData.append("avatarUrl", form_state_sent.avatarUrl);
+        }
 
-    sendRequest(() => register(formData));
-};
+        sendRequest(() => register(formData));
+    };
 
     const [avatarFile, setAvatarFile] = useState(null);
     const { form_state,
@@ -71,7 +74,7 @@ const formData = new FormData();
                     <label htmlFor="avatar-image">Cargar Avatar:</label>
                     <input type="file" accept="image/*" placeholder='avatar-image' onChange={(e) => setAvatarFile(e.target.files[0])}
                     />
-                </div> *
+                </div>
                 {error && <span style={{ color: 'red' }}>{error}</span>}
                 {response && <span style={{ color: 'green' }}>Usuario registrado con exito</span>}
                 {
@@ -80,6 +83,7 @@ const formData = new FormData();
                         : <button>Registrarse</button>
                 }
             </form>
+            <button onClick={() => navigate("/login")}>Login</button>
         </div>
     )
 
