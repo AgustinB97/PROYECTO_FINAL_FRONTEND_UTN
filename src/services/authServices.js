@@ -6,6 +6,7 @@ export async function register(formData) {
             "https://proyecto-final-backend-utn-three.vercel.app/api/auth/register",
             {
                 method: "POST",
+                credentials: "include",
                 body: formData
             }
         );
@@ -29,6 +30,7 @@ export async function login(email, password) {
             "https://proyecto-final-backend-utn-three.vercel.app/api/auth/login",
             {
                 method: "POST",
+                credentials: "include",
                 headers: {
                     "Content-Type": "application/json"
                 },
