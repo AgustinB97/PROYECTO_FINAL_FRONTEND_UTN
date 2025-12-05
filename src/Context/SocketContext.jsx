@@ -1,27 +1,28 @@
 import { io } from "socket.io-client";
 import ENVIRONMENT from "../config/enviroment";
-import { createContext, useEffect, useRef } from "react";
+import { createContext, useEffect, useRef,useState } from "react";
 
 export const SocketContext = createContext(null);
 
 export const SocketProvider = ({ children, userId }) => {
     const socketRef = useRef(null);
+    const [socket, setSocket] = useState(null);
 
     useEffect(() => {
         if (!userId) return;
 
-        socketRef.current = io(ENVIRONMENT.URL_API, { withCredentials: true });
-        const socket = socketRef.current;
+        const newSocket = io(ENVIRONMENT.URL_API, { withCredentials: true });
+        socketRef(newSocket)
 
-        socket.emit("register_user", userId);
+        newSocket.emit("register_user", userId);
 
-        return () => socket.disconnect();
+        return () => newSocket.disconnect();
     }, [userId]);
 
-    const joinChat = (chatId) => socketRef.current?.emit("join_chat", chatId);
+    const joinChat = (chatId) => socket?.emit("join_chat", chatId);
 
     const sendMessage = ({ chatId, content, type = "text" }) =>
-        socketRef.current?.emit("send_message", {
+        socket?.emit("send_message", {
             chatId,
             content,
             type,
@@ -29,7 +30,7 @@ export const SocketProvider = ({ children, userId }) => {
         });
 
     return (
-        <SocketContext.Provider value={{ socketRef, joinChat, sendMessage }}>
+        <SocketContext.Provider value={{ socket, socketRef, joinChat, sendMessage }}>
             {children}
         </SocketContext.Provider>
     );

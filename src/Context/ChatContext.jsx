@@ -6,11 +6,37 @@ import { getUserChats } from "../services/chatServices";
 export const ChatContext = createContext();
 
 export const ChatProvider = ({ children }) => {
-    const { socketRef } = useContext(SocketContext);
+    const { socket } = useContext(SocketContext);
     const { user } = useContext(AuthContext);
 
     const [chats, setChats] = useState([]);
     const [selectedChat, setSelectedChat] = useState(null);
+
+    const moveChatToTop = (chatId) => {
+        setChats(prev => {
+            const found = prev.find(c => c._id === chatId);
+            if (!found) return prev;
+
+            const rest = prev.filter(c => c._id !== chatId);
+            return [found, ...rest];
+        });
+    };
+
+    const updateChatLastMessage = (chatId, last_message) => {
+        setChats(prev =>
+            prev.map(c =>
+                c._id === chatId ? { ...c, last_message } : c
+            )
+        );
+        moveChatToTop(chatId);
+    };
+
+    const addChatIfNotExists = (chat) => {
+        setChats(prev => {
+            if (prev.some(c => c._id === chat._id)) return prev;
+            return [chat, ...prev];
+        });
+    };
 
     useEffect(() => {
         if (!user?._id) return;
@@ -22,7 +48,6 @@ export const ChatProvider = ({ children }) => {
     }, [user]);
 
     useEffect(() => {
-        const socket = socketRef.current;
         if (!socket || !user?._id) return;
 
         socket.emit("join_user", user._id);
@@ -31,21 +56,24 @@ export const ChatProvider = ({ children }) => {
             socket.emit("join_chat", chat._id);
         });
 
-    }, [user, chats]);
+    }, [socket, user, chats]);
 
     useEffect(() => {
-        const socket = socketRef.current;
         if (!socket) return;
 
         const handleNewChat = (chat) => {
-            setChats(prev => {
-                if (prev.some(c => c._id === chat._id)) return prev;
-                return [chat, ...prev];
-            });
+            addChatIfNotExists(chat);
+            moveChatToTop(chat._id);
         };
 
         const handleReceiveMessage = (msg) => {
-            const chatId = msg.chatId._id || msg.chatId;
+            const rawId = msg.chatId;
+            const chatId = rawId?._id || rawId;
+
+            if (!chatId) {
+                console.error("ERROR: msg.chatId inválido", msg);
+                return;
+            }
 
             setChats(prev => {
                 const exists = prev.find(c => c._id === chatId);
@@ -53,9 +81,9 @@ export const ChatProvider = ({ children }) => {
                 if (!exists) {
                     const newChat = {
                         _id: chatId,
-                        members: msg.chatId.members || [],
-                        isGroup: msg.chatId.isGroup,
-                        name: msg.chatId.name || null,
+                        members: rawId?.members || [],
+                        isGroup: rawId?.isGroup || false,
+                        name: rawId?.name || "Nuevo chat",
                         last_message: msg
                     };
                     return [newChat, ...prev];
@@ -67,18 +95,13 @@ export const ChatProvider = ({ children }) => {
 
                 const moved = updated.find(c => c._id === chatId);
                 const rest = updated.filter(c => c._id !== chatId);
+
                 return [moved, ...rest];
             });
         };
 
         const handleMessageDeleted = ({ chatId, last_message }) => {
-            setChats(prev =>
-                prev.map(c =>
-                    c._id === chatId
-                        ? { ...c, last_message: last_message || null }
-                        : c
-                )
-            );
+            updateChatLastMessage(chatId, last_message || null);
         };
 
         socket.on("new_chat", handleNewChat);
@@ -91,7 +114,7 @@ export const ChatProvider = ({ children }) => {
             socket.off("message_deleted", handleMessageDeleted);
         };
 
-    }, []);
+    }, [socket]);
 
     return (
         <ChatContext.Provider value={{

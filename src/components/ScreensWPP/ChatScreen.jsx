@@ -9,14 +9,15 @@ import ENVIRONMENT from "../../config/enviroment";
 const ChatScreen = () => {
     const { id: chatId } = useParams();
     const { user } = useContext(AuthContext);
-    const { socketRef } = useContext(SocketContext);
-    const { chats, setChats } = useContext(ChatContext);
+    const { socket, joinChat } = useContext(SocketContext);
+    const { chats, setSelectedChat } = useContext(ChatContext);
 
     const [chat, setChat] = useState(null);
     const [messages, setMessages] = useState([]);
     const [value, setValue] = useState("");
     const [isGroupSettings, setIsGroupSettings] = useState(false);
     const [allUsers, setAllUsers] = useState([]);
+
 
     useEffect(() => {
         if (!chatId || !user) return;
@@ -25,91 +26,56 @@ const ChatScreen = () => {
             try {
                 const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/${chatId}`);
                 const data = await res.json();
-                if (!data.ok) return console.error(data.message);
+                if (!data.ok) return;
 
-                let c = data.chat;
-                if (!c) return;
+                setChat(data.chat);
+                setMessages(data.messages || []);
 
-                if (!c.isGroup) {
-                    const other = Array.isArray(c.members)
-                        ? c.members.find((m) => String(m._id) !== String(user._id))
-                        : null;
-                    c = {
-                        ...c,
-                        name: other?.username || "Usuario",
-                        avatar: other?.avatar || "/default-avatar.png",
-                    };
-                }
+                setSelectedChat(data.chat);
 
-                setChat(c);
-                setMessages(Array.isArray(data.messages) ? data.messages : []);
-
-                setChats((prev) =>
-                    prev.map((ch) =>
-                        ch._id === chatId
-                            ? { ...ch, last_message: data.messages.slice(-1)[0] || null }
-                            : ch
-                    )
-                );
             } catch (e) {
                 console.error("Error cargando chat:", e);
             }
         }
 
         loadChat();
-    }, [chatId, user, setChats]);
+    }, [chatId, user]);
 
 
     useEffect(() => {
-        const socket = socketRef.current;
         if (!socket || !chatId) return;
+        joinChat(chatId);
+    }, [socket, chatId]);
+
+
+    useEffect(() => {
+        if (!socket) return;
 
         const handleNewMessage = (msg) => {
             const id = msg.chatId?._id || msg.chatId;
-            if (!id || id !== chatId) return;
-
-            setMessages((prev) => [...prev, msg]);
-            setChats((prev) =>
-                prev.map((ch) =>
-                    ch._id === chatId ? { ...ch, last_message: msg } : ch
-                )
-            );
-        };
-
-        const handleDeleteMessage = ({ messageId, chatId: deletedChatId, last_message }) => {
-            if (deletedChatId !== chatId) return;
-
-            setMessages((prev) => prev.filter((m) => m._id !== messageId));
-            setChats((prev) =>
-                prev.map((ch) =>
-                    ch._id === chatId ? { ...ch, last_message: last_message || null } : ch
-                )
-            );
+            if (id !== chatId) return;
+            setMessages(prev => [...prev, msg]);
         };
 
         socket.on("receive_message", handleNewMessage);
-        socket.on("message_deleted", handleDeleteMessage);
 
         return () => {
             socket.off("receive_message", handleNewMessage);
-            socket.off("message_deleted", handleDeleteMessage);
         };
-    }, [socketRef, chatId, setChats]);
-
+    }, [socket, chatId]);
 
     const sendMessage = async (e) => {
         e.preventDefault();
         if (!value.trim()) return;
 
-        const socket = socketRef.current;
-        const tempMessage = {
+        const temp = {
             sender: { _id: user._id },
             content: value,
             chatId,
             createdAt: new Date().toISOString(),
         };
 
-        setMessages((prev) => [...prev, tempMessage]);
+        setMessages(prev => [...prev, temp]);
         setValue("");
 
         try {
@@ -118,22 +84,16 @@ const ChatScreen = () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ chatId, senderId: user._id, content: value }),
             });
+
             const saved = await res.json();
             if (saved.ok && socket) socket.emit("send_message", saved.message);
 
-            setMessages((prev) =>
-                prev.map((m) =>
-                    m === tempMessage ? { ...m, _id: saved.message._id } : m
-                )
-            );
         } catch (err) {
             console.error("Error enviando mensaje:", err);
         }
     };
 
     if (!chat) return <p>Cargando chat...</p>;
-
-    const isAdmin = chat.admins?.some((a) => String(a._id) === String(user._id));
 
     return (
         <div className="chat-screen">
@@ -230,5 +190,6 @@ const ChatScreen = () => {
         </div>
     );
 };
+
 
 export default ChatScreen;

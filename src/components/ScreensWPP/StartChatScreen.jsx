@@ -7,7 +7,7 @@ import { ChatContext } from "../../Context/ChatContext";
 
 
 const StartChatScreen = () => {
-    const { socketRef } = useContext(SocketContext);
+    const { socket } = useContext(SocketContext);
     const { setChats, setSelectedChat } = useContext(ChatContext);
     const { user } = useContext(AuthContext);
     const navigate = useNavigate();
@@ -65,7 +65,7 @@ const StartChatScreen = () => {
                 return [data.chat, ...prev];
             });
 
-            socketRef.current.emit("new_chat", data.chat);
+            socket.emit("new_chat", data.chat);
 
             setSelectedChat(data.chat);
 
@@ -116,7 +116,7 @@ const createGroup = async () => {
             setChats(prev => [data.group, ...prev]);
 
 
-            socketRef.current.emit("new_chat", data.group);
+            socket.emit("new_chat", data.group);
 
 
             setSelectedChat(data.group);
