@@ -8,9 +8,10 @@ import { getUserChats } from "../../services/chatServices";
 const ContactScreen = () => {
     const navigate = useNavigate();
     const { user } = useContext(AuthContext);
-    const { socket } = useContext(SocketContext);
+    const { socketRef } = useContext(SocketContext);
     const { chats, setChats, selectedChat, setSelectedChat } = useContext(ChatContext);
     const [searchText, setSearchText] = useState("");
+    const socket = socketRef.current;
 
     useEffect(() => {
         if (!user?._id) return;
