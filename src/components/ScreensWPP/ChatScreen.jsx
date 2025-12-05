@@ -95,6 +95,17 @@ const ChatScreen = () => {
 
     if (!chat) return <p>Cargando chat...</p>;
 
+    const isAdmin = Boolean(
+        chat?.isGroup &&
+        Array.isArray(chat?.admins) &&
+        chat.admins.some(a =>
+            a &&
+            a._id &&
+            user?._id &&
+            String(a._id) === String(user._id)
+        )
+    );
+
     return (
         <div className="chat-screen">
             {/* HEADER */}
