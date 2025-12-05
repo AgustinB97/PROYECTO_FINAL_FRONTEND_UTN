@@ -38,6 +38,8 @@ const StartChatScreen = () => {
 
 
     const startPrivateChat = async (otherUserId) => {
+        setLoading(true);
+
         try {
             const body = {
                 userAId: user._id,
@@ -52,32 +54,47 @@ const StartChatScreen = () => {
 
             const data = await res.json();
 
-            if (data.ok) {
-                navigate(`/home/chat/${data.chat._id}`);
-            }
+            setLoading(false);
 
-        } catch (error) {
-            console.error("Error iniciando chat privado:", error);
-        }
-    };
+            if (!data.ok) return;
+
+            setChats(prev => {
+                const exists = prev.find(c => c._id === data.chat._id);
+                if (exists) return prev;
+
+                return [data.chat, ...prev];
+            });
+
+            socket.emit("new_chat", data.chat);
+
+            setSelectedChat(data.chat);
+
+            navigate(`/home/chat/${data.chat._id}`);
+
+    } catch (error) {
+        console.error("Error iniciando chat privado:", error);
+    }
+};
 
 
 
 
-    const toggleSelect = (id) => {
-        setSelectedUsers(prev =>
-            prev.includes(id)
-                ? prev.filter(u => u !== id)
-                : [...prev, id]
-        );
-    };
+const toggleSelect = (id) => {
+    setSelectedUsers(prev =>
+        prev.includes(id)
+            ? prev.filter(u => u !== id)
+            : [...prev, id]
+    );
+};
 
 
 const createGroup = async () => {
     try {
         if (!groupName.trim() || selectedUsers.length < 2) {
-            return alert("El grupo necesita un nombre y al menos 2 miembros");
-        }
+            return alert("El grupo necesita un nombre y al menos 2 miembros")
+        };
+
+        setLoading(true);
 
         const body = {
             name: groupName,
@@ -104,8 +121,10 @@ const createGroup = async () => {
 
             setSelectedChat(data.group);
 
-
-            navigate(`/home/chat/${data.group._id}`);
+            setTimeout(() => {
+                setLoading(false)
+                navigate(`/home/chat/${data.group._id}`)
+            }, 200);
         }
 
     } catch (err) {
