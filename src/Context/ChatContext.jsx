@@ -127,7 +127,10 @@ export const ChatProvider = ({ children }) => {
             });
         };
 
-        const handleMessageDeleted = ({ chatId, last_message }) => {
+        const handleMessageDeleted = ({ chatId, messageId, last_message }) => {
+
+            setMessages(prev => prev.filter(m=>m._id !== messageId));
+
             updateChatLastMessage(chatId, last_message || null);
         };
 
