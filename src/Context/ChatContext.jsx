@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { SocketContext } from "./SocketContext";
 import { AuthContext } from "./AuthContext";
 import { getUserChats } from "../services/chatServices";
+import ENVIRONMENT from "../config/enviroment";
 
 export const ChatContext = createContext();
 
