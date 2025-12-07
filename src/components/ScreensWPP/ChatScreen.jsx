@@ -201,7 +201,7 @@ const ChatScreen = () => {
                                             {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                                         </span>
                                         {isMine && (
-                                            <button className="delete-message-btn" disabled={!msg._id} onClick={() => deleteMessage(msg._id)}>🗑</button>
+                                            <button className="delete-message-btn" disabled={!msg._id} onClick={() => deleteMessage(chatId, msg._id)}>🗑</button>
                                         )}
                                     </li>
                                 );
