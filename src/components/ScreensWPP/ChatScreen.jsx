@@ -63,6 +63,27 @@ const ChatScreen = () => {
         };
     }, [socket, chatId]);
 
+
+    useEffect(() => {
+    async function loadUsers() {
+        try {
+            const res = await fetch(`${ENVIRONMENT.URL_API}/api/users`);
+            const data = await res.json();
+
+            if (data.ok) {
+                setAllUsers(data.users);
+            } else {
+                console.error("Error cargando usuarios:", data.message);
+            }
+        } catch (err) {
+            console.error("Error cargando usuarios:", err);
+        }
+    }
+
+    loadUsers();
+}, []);
+
+
     const sendMessage = async (e) => {
         e.preventDefault();
         if (!value.trim()) return;
@@ -170,7 +191,7 @@ const ChatScreen = () => {
                     {/* AÑADIR USUARIOS */}
                     <h3 className="group-settings-subtitle">Añadir usuarios</h3>
                     {allUsers
-                        .filter((u) => !chat.members.some((m) => m._id === u._id))
+                        .filter((u) => !chat.members.some((m) => String(m._id) === String(u._id)))
                         .map((u) => (
                             <div key={u._id} className="group-user-row">
                                 <img src={u.avatar} className="group-user-avatar" />
