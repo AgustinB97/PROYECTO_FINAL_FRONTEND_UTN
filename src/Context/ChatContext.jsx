@@ -38,6 +38,32 @@ export const ChatProvider = ({ children }) => {
         });
     };
 
+    const deleteMessage = async (chatId, messageId) => {
+    try {
+        const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/message/${messageId}`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" }
+        });
+
+        const data = await res.json();
+        if (!data.ok) {
+            console.error(data.message);
+            return;
+        }
+
+        socket?.emit("delete_message", {
+            chatId,
+            messageId
+        });
+
+        updateChatLastMessage(chatId, data.last_message ?? null);
+
+    } catch (err) {
+        console.error("Error eliminando mensaje:", err);
+    }
+};
+
+
     useEffect(() => {
         if (!user?._id) return;
 
@@ -48,7 +74,7 @@ export const ChatProvider = ({ children }) => {
     }, [user]);
 
     useEffect(() => {
-        if (!socket || !user?._id) return;
+        if (!socket || !user?._id || chats.length === 0) return;
 
         socket.emit("join_user", user._id);
 
@@ -56,7 +82,7 @@ export const ChatProvider = ({ children }) => {
             socket.emit("join_chat", chat._id);
         });
 
-    }, [socket, user, chats]);
+    }, [socket, user, chats.length]);
 
     useEffect(() => {
         if (!socket) return;
@@ -122,7 +148,7 @@ export const ChatProvider = ({ children }) => {
             setChats,
             selectedChat,
             setSelectedChat,
-            handleMessageDeleted
+            deleteMessage
         }}>
             {children}
         </ChatContext.Provider>

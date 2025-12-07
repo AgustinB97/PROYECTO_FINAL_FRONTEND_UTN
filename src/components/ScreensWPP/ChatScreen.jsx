@@ -10,7 +10,7 @@ const ChatScreen = () => {
     const { id: chatId } = useParams();
     const { user } = useContext(AuthContext);
     const { socket, joinChat } = useContext(SocketContext);
-    const { chats, setSelectedChat, handleMessageDeleted } = useContext(ChatContext);
+    const { chats, setSelectedChat, deleteMessage } = useContext(ChatContext);
     const [chat, setChat] = useState(null);
     const [messages, setMessages] = useState([]);
     const [value, setValue] = useState("");
@@ -91,7 +91,7 @@ const ChatScreen = () => {
             console.error("Error enviando mensaje:", err);
         }
     };
-    
+
     const addUserToGroup = async (userId) => {
         const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/${chatId}/add-user`, {
             method: "POST",
@@ -201,7 +201,7 @@ const ChatScreen = () => {
                                             {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                                         </span>
                                         {isMine && (
-                                            <button className="delete-message-btn" disabled={!msg._id} onClick={() => handleMessageDeleted(msg._id)}>🗑</button>
+                                            <button className="delete-message-btn" disabled={!msg._id} onClick={() => deleteMessage(msg._id)}>🗑</button>
                                         )}
                                     </li>
                                 );
