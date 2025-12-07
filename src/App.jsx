@@ -32,7 +32,7 @@ function App() {
                 index
                 element={
                   <div className="chatscreen-start">
-                    <img src="./start.png" alt="" />
+                    <img src="" alt="" />
                   </div>
                 }
               />
