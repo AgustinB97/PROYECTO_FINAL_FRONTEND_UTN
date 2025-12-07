@@ -121,7 +121,8 @@ export const ChatProvider = ({ children }) => {
             chats,
             setChats,
             selectedChat,
-            setSelectedChat
+            setSelectedChat,
+            handleMessageDeleted
         }}>
             {children}
         </ChatContext.Provider>
