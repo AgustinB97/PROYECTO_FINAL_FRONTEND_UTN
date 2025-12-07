@@ -91,6 +91,31 @@ const ChatScreen = () => {
             console.error("Error enviando mensaje:", err);
         }
     };
+    
+    const addUserToGroup = async (userId) => {
+        const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/${chatId}/add-user`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId }),
+        });
+
+        const data = await res.json();
+        if (data.ok) setChat(data.group);
+        else alert(data.message);
+    };
+
+    const removeUserFromGroup = async (userId) => {
+        const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/${chatId}/remove-user`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId }),
+        });
+
+        const data = await res.json();
+        if (data.ok) setChat(data.group);
+        else alert(data.message);
+    };
+
 
     if (!chat) return <p>Cargando chat...</p>;
 
