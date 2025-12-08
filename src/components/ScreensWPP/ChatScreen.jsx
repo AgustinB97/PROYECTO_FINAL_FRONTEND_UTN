@@ -21,15 +21,20 @@ const ChatScreen = () => {
         )
     );
 
-    const send = () => {
+    const send = (e) => {
+        e.preventDefault();
+
         if (!text.trim()) return;
+
         socket.emit("send_message", {
             chatId: selectedChat._id,
             sender: user._id,
             content: text,
         });
+
         setText("");
     };
+
     const addUserToGroup = async (userId) => {
         const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/${selectedChat._id}/add-user`, {
             method: "POST",
@@ -141,7 +146,7 @@ const ChatScreen = () => {
                             <input
                                 className="send-message__input"
                                 value={text}
-                                onChange={(e) => send}
+                                onChange={(e) => setText(e.target.value)}
                                 placeholder="Escribe un mensaje"
                             />
                             <button type="submit" className="send-message__send-btn">Enviar</button>
