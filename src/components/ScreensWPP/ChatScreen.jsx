@@ -3,6 +3,7 @@ import { ChatContext } from "../../Context/ChatContext";
 import { AuthContext } from "../../Context/AuthContext";
 import { SocketContext } from "../../Context/SocketContext";
 import ENVIRONMENT from "../../config/enviroment";
+import { useParams } from 'react-router-dom';
 
 const ChatScreen = () => {
     const { id: chatId } = useParams();
