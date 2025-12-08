@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { SocketContext } from "./SocketContext";
 import { AuthContext } from "./AuthContext";
-import { getUserChats } from "../services/chatServices";
+import { getUserChats, getChatMessages } from "../services/chatServices";
 import ENVIRONMENT from "../config/enviroment";
 
 export const ChatContext = createContext();
@@ -9,9 +9,39 @@ export const ChatContext = createContext();
 export const ChatProvider = ({ children }) => {
     const { socket } = useContext(SocketContext);
     const { user } = useContext(AuthContext);
-
     const [chats, setChats] = useState([]);
     const [selectedChat, setSelectedChat] = useState(null);
+    const [messages, setMessages] = useState([]);
+
+
+    useEffect(() => {
+        if (!user?._id) return;
+
+        getUserChats(user._id).then(res => {
+            if (res.ok) setChats(res.chats);
+            else console.error(res.message);
+        });
+    }, [user]);
+
+
+    useEffect(() => {
+        if (!selectedChat?._id) return;
+
+        getChatMessages(selectedChat._id).then(res => {
+            if (res.ok) setMessages(res.messages);
+            else console.error(res.message);
+        });
+    }, [selectedChat]);
+
+
+    useEffect(() => {
+        if (!socket || !user?._id || chats.length === 0) return;
+
+        socket.emit("join_user", user._id);
+        chats.forEach(chat => socket.emit("join_chat", chat._id));
+
+    }, [socket, user, chats.length]);
+
 
     const moveChatToTop = (chatId) => {
         setChats(prev => {
@@ -32,104 +62,34 @@ export const ChatProvider = ({ children }) => {
         moveChatToTop(chatId);
     };
 
-    const addChatIfNotExists = (chat) => {
-        setChats(prev => {
-            if (prev.some(c => c._id === chat._id)) return prev;
-            return [chat, ...prev];
-        });
-    };
-
-    const deleteMessage = async (chatId, messageId) => {
-    try {
-        const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/message/${messageId}`, {
-            method: "DELETE",
-            headers: { "Content-Type": "application/json" }
-        });
-
-        const data = await res.json();
-        if (!data.ok) {
-            console.error(data.message);
-            return;
-        }
-
-        socket?.emit("delete_message", {
-            chatId,
-            messageId
-        });
-
-        updateChatLastMessage(chatId, data.last_message ?? null);
-
-    } catch (err) {
-        console.error("Error eliminando mensaje:", err);
-    }
-};
-
-
-    useEffect(() => {
-        if (!user?._id) return;
-
-        getUserChats(user._id).then(res => {
-            if (res.ok) setChats(res.chats);
-            else console.error(res.message);
-        });
-    }, [user]);
-
-    useEffect(() => {
-        if (!socket || !user?._id || chats.length === 0) return;
-
-        socket.emit("join_user", user._id);
-
-        chats.forEach(chat => {
-            socket.emit("join_chat", chat._id);
-        });
-
-    }, [socket, user, chats.length]);
 
     useEffect(() => {
         if (!socket) return;
 
         const handleNewChat = (chat) => {
-            addChatIfNotExists(chat);
-            moveChatToTop(chat._id);
+            setChats(prev => {
+                if (prev.some(c => c._id === chat._id)) return prev;
+                return [chat, ...prev];
+            });
         };
 
         const handleReceiveMessage = (msg) => {
-            const rawId = msg.chatId;
-            const chatId = rawId?._id || rawId;
+            const chatId = msg.chatId._id || msg.chatId;
 
-            if (!chatId) {
-                console.error("ERROR: msg.chatId inválido", msg);
-                return;
+            updateChatLastMessage(chatId, msg);
+
+            if (selectedChat?._id === chatId) {
+                setMessages(prev => [...prev, msg]);
             }
-
-            setChats(prev => {
-                const exists = prev.find(c => c._id === chatId);
-
-                if (!exists) {
-                    const newChat = {
-                        _id: chatId,
-                        members: rawId?.members || [],
-                        isGroup: rawId?.isGroup || false,
-                        name: rawId?.name || "Nuevo chat",
-                        last_message: msg
-                    };
-                    return [newChat, ...prev];
-                }
-
-                const updated = prev.map(c =>
-                    c._id === chatId ? { ...c, last_message: msg } : c
-                );
-
-                const moved = updated.find(c => c._id === chatId);
-                const rest = updated.filter(c => c._id !== chatId);
-
-                return [moved, ...rest];
-            });
         };
 
         const handleMessageDeleted = ({ chatId, messageId, last_message }) => {
 
-            setMessages(prev => prev.filter(m=>m._id !== messageId));
+
+            if (selectedChat?._id === chatId) {
+                setMessages(prev => prev.filter(m => m._id !== messageId));
+            }
+
 
             updateChatLastMessage(chatId, last_message || null);
         };
@@ -144,13 +104,34 @@ export const ChatProvider = ({ children }) => {
             socket.off("message_deleted", handleMessageDeleted);
         };
 
-    }, [socket]);
+    }, [socket, selectedChat]);
+
+
+    const deleteMessage = async (chatId, messageId) => {
+        try {
+            const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/message/${messageId}`, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" }
+            });
+
+            const data = await res.json();
+            if (!data.ok) return console.error(data.message);
+
+            socket?.emit("delete_message", { chatId, messageId });
+            updateChatLastMessage(chatId, data.last_message ?? null);
+
+            setMessages(prev => prev.filter(m => m._id !== messageId));
+
+        } catch (err) {
+            console.error("Error eliminando mensaje:", err);
+        }
+    };
 
     return (
         <ChatContext.Provider value={{
             chats,
-            setChats,
             selectedChat,
+            messages,
             setSelectedChat,
             deleteMessage
         }}>

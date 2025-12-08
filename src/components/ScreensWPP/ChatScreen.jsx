@@ -1,118 +1,26 @@
-import React, { useState, useEffect, useContext } from "react";
-import { useParams } from "react-router-dom";
+import React, { useContext, useState } from "react";
+import { ChatContext } from "../../Context/ChatContext";
 import { AuthContext } from "../../Context/AuthContext";
 import { SocketContext } from "../../Context/SocketContext";
-import { ChatContext } from "../../Context/ChatContext";
 import ENVIRONMENT from "../../config/enviroment";
-
 
 const ChatScreen = () => {
     const { id: chatId } = useParams();
+    const { selectedChat, messages, deleteMessage } = useContext(ChatContext);
     const { user } = useContext(AuthContext);
-    const { socket, joinChat } = useContext(SocketContext);
-    const { chats, setSelectedChat, deleteMessage } = useContext(ChatContext);
+    const { socket } = useContext(SocketContext);
     const [chat, setChat] = useState(null);
-    const [messages, setMessages] = useState([]);
-    const [value, setValue] = useState("");
-    const [isGroupSettings, setIsGroupSettings] = useState(false);
-    const [allUsers, setAllUsers] = useState([]);
+    const [text, setText] = useState("");
 
-
-    useEffect(() => {
-        if (!chatId || !user) return;
-
-        async function loadChat() {
-            try {
-                const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/${chatId}`);
-                const data = await res.json();
-                if (!data.ok) return;
-
-                setChat(data.chat);
-                setMessages(data.messages || []);
-
-                setSelectedChat(data.chat);
-
-            } catch (e) {
-                console.error("Error cargando chat:", e);
-            }
-        }
-
-        loadChat();
-    }, [chatId, user]);
-
-
-    useEffect(() => {
-        if (!socket || !chatId) return;
-        joinChat(chatId);
-    }, [socket, chatId]);
-
-
-    useEffect(() => {
-        if (!socket) return;
-
-        const handleNewMessage = (msg) => {
-            const id = msg.chatId?._id || msg.chatId;
-            if (id !== chatId) return;
-            setMessages(prev => [...prev, msg]);
-        };
-
-        socket.on("receive_message", handleNewMessage);
-
-        return () => {
-            socket.off("receive_message", handleNewMessage);
-        };
-    }, [socket, chatId]);
-
-
-    useEffect(() => {
-    async function loadUsers() {
-        try {
-            const res = await fetch(`${ENVIRONMENT.URL_API}/api/users`);
-            const data = await res.json();
-
-            if (data.ok) {
-                setAllUsers(data.users);
-            } else {
-                console.error("Error cargando usuarios:", data.message);
-            }
-        } catch (err) {
-            console.error("Error cargando usuarios:", err);
-        }
-    }
-
-    loadUsers();
-}, []);
-
-
-    const sendMessage = async (e) => {
-        e.preventDefault();
-        if (!value.trim()) return;
-
-        const temp = {
-            sender: { _id: user._id },
-            content: value,
-            chatId,
-            createdAt: new Date().toISOString(),
-        };
-
-        setMessages(prev => [...prev, temp]);
-        setValue("");
-
-        try {
-            const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/message`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ chatId, senderId: user._id, content: value }),
-            });
-
-            const saved = await res.json();
-            if (saved.ok && socket) socket.emit("send_message", saved.message);
-
-        } catch (err) {
-            console.error("Error enviando mensaje:", err);
-        }
+    const send = () => {
+        if (!text.trim()) return;
+        socket.emit("send_message", {
+            chatId: selectedChat._id,
+            sender: user._id,
+            content: text,
+        });
+        setText("");
     };
-
     const addUserToGroup = async (userId) => {
         const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/${chatId}/add-user`, {
             method: "POST",
@@ -136,7 +44,6 @@ const ChatScreen = () => {
         if (data.ok) setChat(data.group);
         else alert(data.message);
     };
-
 
     if (!chat) return <p>Cargando chat...</p>;
 
@@ -246,6 +153,5 @@ const ChatScreen = () => {
         </div>
     );
 };
-
 
 export default ChatScreen;
