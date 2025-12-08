@@ -3,15 +3,23 @@ import { ChatContext } from "../../Context/ChatContext";
 import { AuthContext } from "../../Context/AuthContext";
 import { SocketContext } from "../../Context/SocketContext";
 import ENVIRONMENT from "../../config/enviroment";
-import { useParams } from 'react-router-dom';
 
 const ChatScreen = () => {
-    const { id: chatId } = useParams();
-    const { selectedChat, messages, deleteMessage } = useContext(ChatContext);
+    const { selectedChat, setSelectedChat, messages, deleteMessage } = useContext(ChatContext);
     const { user } = useContext(AuthContext);
     const { socket } = useContext(SocketContext);
-    const [chat, setChat] = useState(null);
     const [text, setText] = useState("");
+    const [isGroupSettings, setIsGroupSettings] = useState(false);
+    const isAdmin = Boolean(
+        selectedChat?.isGroup &&
+        Array.isArray(selectedChat?.admins) &&
+        selectedChat.admins.some(a =>
+            a &&
+            a._id &&
+            user?._id &&
+            String(a._id) === String(user._id)
+        )
+    );
 
     const send = () => {
         if (!text.trim()) return;
@@ -23,51 +31,41 @@ const ChatScreen = () => {
         setText("");
     };
     const addUserToGroup = async (userId) => {
-        const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/${chatId}/add-user`, {
+        const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/${selectedChat._id}/add-user`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ userId }),
         });
 
         const data = await res.json();
-        if (data.ok) setChat(data.group);
+        if (data.ok) setSelectedChat(data.group);
         else alert(data.message);
     };
 
     const removeUserFromGroup = async (userId) => {
-        const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/${chatId}/remove-user`, {
+        const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/${selectedChat._id}/remove-user`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ userId }),
         });
 
         const data = await res.json();
-        if (data.ok) setChat(data.group);
+        if (data.ok) setSelectedChat(data.group);
         else alert(data.message);
     };
 
-    if (!chat) return <p>Cargando chat...</p>;
+    if (!selectedChat) return <p>Cargando chat...</p>;
 
-    const isAdmin = Boolean(
-        chat?.isGroup &&
-        Array.isArray(chat?.admins) &&
-        chat.admins.some(a =>
-            a &&
-            a._id &&
-            user?._id &&
-            String(a._id) === String(user._id)
-        )
-    );
 
     return (
         <div className="chat-screen">
             {/* HEADER */}
             <div className="contact-nav">
                 <div className="contact-nav__avatar-name">
-                    <img src={chat.avatar || "/default-avatar.png"} className="contact-nav__avatar" alt="avatar" />
-                    <h3 className="contact-nav__name">{chat.name}</h3>
+                    <img src={selectedChat.avatar || "/default-avatar.png"} className="contact-nav__avatar" alt="avatar" />
+                    <h3 className="contact-nav__name">{selectedChat.name}</h3>
                 </div>
-                {chat.isGroup && isAdmin && (
+                {selectedChat.isGroup && isAdmin && (
                     <button className="group-settings-btn" onClick={() => setIsGroupSettings(prev => !prev)}>⚙️</button>
                 )}
             </div>
@@ -80,7 +78,7 @@ const ChatScreen = () => {
 
                     {/* MIEMBROS */}
                     <h3 className="group-settings-subtitle">Miembros</h3>
-                    {chat.members.map((m) => (
+                    {selectedChat.members.map((m) => (
                         <div key={m._id} className="group-user-row">
                             <img src={m.avatar} className="group-user-avatar" />
                             <span className="group-user-name">{m.username}</span>
@@ -99,7 +97,7 @@ const ChatScreen = () => {
                     {/* AÑADIR USUARIOS */}
                     <h3 className="group-settings-subtitle">Añadir usuarios</h3>
                     {allUsers
-                        .filter((u) => !chat.members.some((m) => String(m._id) === String(u._id)))
+                        .filter((u) => !selectedChat.members.some((m) => String(m._id) === String(u._id)))
                         .map((u) => (
                             <div key={u._id} className="group-user-row">
                                 <img src={u.avatar} className="group-user-avatar" />
@@ -122,7 +120,7 @@ const ChatScreen = () => {
                                 const isMine = (msg.sender?._id ?? msg.sender) === user._id;
                                 return (
                                     <li key={msg._id || index} className={`message ${isMine ? "message__me" : "message__other"}`}>
-                                        {!isMine && chat?.isGroup && msg.sender?.avatar && (
+                                        {!isMine && selectedChat?.isGroup && msg.sender?.avatar && (
                                             <img src={msg.sender.avatar} className="msg-avatar" alt="avatar" />
                                         )}
                                         <div className="msg-bubble">{msg.content}</div>
@@ -130,7 +128,7 @@ const ChatScreen = () => {
                                             {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                                         </span>
                                         {isMine && (
-                                            <button className="delete-message-btn" disabled={!msg._id} onClick={() => deleteMessage(chatId, msg._id)}>🗑</button>
+                                            <button className="delete-message-btn" disabled={!msg._id} onClick={() => deleteMessage(selectedChat._id, msg._id)}>🗑</button>
                                         )}
                                     </li>
                                 );
@@ -142,7 +140,7 @@ const ChatScreen = () => {
                         <form className="send-message__form" onSubmit={send}>
                             <input
                                 className="send-message__input"
-                                value={value}
+                                value={text}
                                 onChange={(e) => setText(e.target.value)}
                                 placeholder="Escribe un mensaje"
                             />
