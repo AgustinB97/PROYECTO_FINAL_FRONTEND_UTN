@@ -141,7 +141,7 @@ const ChatScreen = () => {
                             <input
                                 className="send-message__input"
                                 value={text}
-                                onChange={(e) => setText(e.target.value)}
+                                onChange={(e) => send}
                                 placeholder="Escribe un mensaje"
                             />
                             <button type="submit" className="send-message__send-btn">Enviar</button>
