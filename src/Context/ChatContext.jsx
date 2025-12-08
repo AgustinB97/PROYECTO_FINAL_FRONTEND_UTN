@@ -67,7 +67,7 @@ export const ChatProvider = ({ children }) => {
 
 
     useEffect(() => {
-        if (!socket) return;
+        if (!socketReady) return;
 
         const handleNewChat = (chat) => {
             setChats(prev => {
@@ -107,7 +107,7 @@ export const ChatProvider = ({ children }) => {
             socket.off("message_deleted", handleMessageDeleted);
         };
 
-    }, [socket, selectedChat]);
+    }, [socketReady, selectedChat]);
 
 
     const deleteMessage = async (chatId, messageId) => {
