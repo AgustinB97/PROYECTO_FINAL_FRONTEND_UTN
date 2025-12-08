@@ -7,7 +7,7 @@ import ENVIRONMENT from "../config/enviroment";
 export const ChatContext = createContext();
 
 export const ChatProvider = ({ children }) => {
-    const { socket } = useContext(SocketContext);
+    const { socket, socketReady } = useContext(SocketContext);
     const { user } = useContext(AuthContext);
     const [chats, setChats] = useState([]);
     const [selectedChat, setSelectedChat] = useState(null);
@@ -35,12 +35,15 @@ export const ChatProvider = ({ children }) => {
 
 
     useEffect(() => {
-        if (!socket || !user?._id || chats.length === 0) return;
+        if (!socketReady || !user?._id || chats.length === 0) return;
 
         socket.emit("join_user", user._id);
-        chats.forEach(chat => socket.emit("join_chat", chat._id));
 
-    }, [socket, user, chats.length]);
+        chats.forEach(chat => {
+            joinChat(chat._id);
+        });
+
+    }, [socketReady, user, chats.length]);
 
 
     const moveChatToTop = (chatId) => {
