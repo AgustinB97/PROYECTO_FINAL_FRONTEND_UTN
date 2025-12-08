@@ -55,7 +55,7 @@ export const SocketProvider = ({ children, userId }) => {
     return (
         <SocketContext.Provider
             value={{
-                socket: socketRef.current,
+                socketRef,
                 socketReady,
                 joinChat,
                 sendMessage,

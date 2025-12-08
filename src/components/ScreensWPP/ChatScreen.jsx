@@ -7,9 +7,12 @@ import ENVIRONMENT from "../../config/enviroment";
 const ChatScreen = () => {
     const { selectedChat, setSelectedChat, messages, deleteMessage } = useContext(ChatContext);
     const { user } = useContext(AuthContext);
-    const { socket } = useContext(SocketContext);
+    const { socketRef } = useContext(SocketContext);
     const [text, setText] = useState("");
     const [isGroupSettings, setIsGroupSettings] = useState(false);
+
+    const socket = socketRef.current;
+
     const isAdmin = Boolean(
         selectedChat?.isGroup &&
         Array.isArray(selectedChat?.admins) &&
