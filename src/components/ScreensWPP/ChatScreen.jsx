@@ -138,11 +138,11 @@ const ChatScreen = () => {
                     </div>
 
                     <div className="send-message">
-                        <form className="send-message__form" onSubmit={sendMessage}>
+                        <form className="send-message__form" onSubmit={send}>
                             <input
                                 className="send-message__input"
                                 value={value}
-                                onChange={(e) => setValue(e.target.value)}
+                                onChange={(e) => setText(e.target.value)}
                                 placeholder="Escribe un mensaje"
                             />
                             <button type="submit" className="send-message__send-btn">Enviar</button>
