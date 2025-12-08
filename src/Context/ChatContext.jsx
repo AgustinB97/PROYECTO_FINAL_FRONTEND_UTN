@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { SocketContext } from "./SocketContext";
 import { AuthContext } from "./AuthContext";
-import { getUserChats, getChatMessages } from "../services/chatServices";
+import { getUserChats, getMessages } from "../services/chatServices";
 import ENVIRONMENT from "../config/enviroment";
 
 export const ChatContext = createContext();
@@ -27,7 +27,7 @@ export const ChatProvider = ({ children }) => {
     useEffect(() => {
         if (!selectedChat?._id) return;
 
-        getChatMessages(selectedChat._id).then(res => {
+        getMessages(selectedChat._id).then(res => {
             if (res.ok) setMessages(res.messages);
             else console.error(res.message);
         });
