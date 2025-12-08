@@ -13,19 +13,17 @@ const RegisterScreen = () => {
         USERNAME: 'username',
         EMAIL: 'email',
         PASSWORD: 'password',
-        AVATAR: 'avatar'
     }
     const initial_form_state = {
         [REGISTER_FORM_FIELDS.USERNAME]: '',
         [REGISTER_FORM_FIELDS.EMAIL]: '',
         [REGISTER_FORM_FIELDS.PASSWORD]: '',
-        avatarUrl: '',
-        avatarFile: null
     }
 
     const { response, error, loading, sendRequest } = useFetch()
 
     const onRegister = (form_state_sent) => {
+
         const formData = new FormData();
         formData.append("username", form_state_sent.username);
         formData.append("email", form_state_sent.email);
@@ -33,11 +31,8 @@ const RegisterScreen = () => {
 
         if (avatarFile) {
             formData.append("avatar", avatarFile);
-        }
+        };
 
-        if (form_state_sent.avatarUrl && !avatarFile) {
-            formData.append("avatarUrl", form_state_sent.avatarUrl);
-        }
 
         sendRequest(() => register(formData));
     };
@@ -65,10 +60,6 @@ const RegisterScreen = () => {
                 <div className="form-field">
                     <label htmlFor="password">Contrasenia:</label>
                     <input type="text" placeholder='password123' value={form_state[REGISTER_FORM_FIELDS.PASSWORD]} name={REGISTER_FORM_FIELDS.PASSWORD} id={'password'} onChange={onInputChange} />
-                </div>
-                <div className="form-field">
-                    <label htmlFor="avatar-link">Avatar:</label>
-                    <input type="text" placeholder='link-avatar' value={form_state.avatarUrl} name='avatar-url' id={'avatar-url'} onChange={onInputChange} />
                 </div>
                 <div className="form-field">
                     <label htmlFor="avatar-image">Cargar Avatar:</label>

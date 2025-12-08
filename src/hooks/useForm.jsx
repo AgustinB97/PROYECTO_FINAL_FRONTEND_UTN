@@ -1,8 +1,6 @@
 import { useState } from "react"
 
-//Tiene la responsabilidad de manejar el estado de formulario a lo largo de mi app
 const useForm = (initial_form_state, onSubmit) => {
-    //Estado con los valores del formulario
     const [form_state, setFormState] = useState(initial_form_state)
 
 
