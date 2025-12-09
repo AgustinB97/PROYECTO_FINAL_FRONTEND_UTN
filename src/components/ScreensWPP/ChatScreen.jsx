@@ -1,4 +1,4 @@
-import React, { useContext, useState} from "react";
+import React, { useContext, useState } from "react";
 import { ChatContext } from "../../Context/ChatContext";
 import { AuthContext } from "../../Context/AuthContext";
 import { SocketContext } from "../../Context/SocketContext";
@@ -25,7 +25,11 @@ const ChatScreen = () => {
     const send = (e) => {
         e.preventDefault();
         if (!text.trim() || !selectedChat?._id) return;
-
+        console.log("ENVIANDO AL SOCKET:", {
+            chatId: selectedChat._id,
+            content: text,
+            senderId: user._id
+        });
         sendMessage({
             chatId: selectedChat._id,
             content: text,

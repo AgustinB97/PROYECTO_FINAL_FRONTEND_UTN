@@ -40,6 +40,7 @@ export const SocketProvider = ({ children }) => {
     };
 
     const sendMessage = ({ chatId, content, type = "text", senderId }) => {
+        console.log("SocketContext → emit send_message:", data, socketRef.current);
         socketRef.current?.emit("send_message", { chatId, content, type, senderId });
     };
 
