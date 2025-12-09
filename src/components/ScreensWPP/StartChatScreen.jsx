@@ -71,131 +71,133 @@ const StartChatScreen = () => {
 
             navigate(`/home/chat/${data.chat._id}`);
 
-    } catch (error) {
-        console.error("Error iniciando chat privado:", error);
-    }
-};
-
-
-
-
-const toggleSelect = (id) => {
-    setSelectedUsers(prev =>
-        prev.includes(id)
-            ? prev.filter(u => u !== id)
-            : [...prev, id]
-    );
-};
-
-
-const createGroup = async () => {
-    try {
-        if (!groupName.trim() || selectedUsers.length < 2) {
-            return alert("El grupo necesita un nombre y al menos 2 miembros")
-        };
-
-        setLoading(true);
-
-        const body = {
-            name: groupName,
-            ownerId: user._id,
-            participants: [...selectedUsers],
-            avatar: groupAvatar
-        };
-
-        const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/group/create`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body)
-        });
-
-        const data = await res.json();
-
-        if (data.ok) {
-
-            setChats(prev => [data.group, ...prev]);
-
-
-            socket.emit("new_chat", data.group);
-
-
-            setSelectedChat(data.group);
-
-            setTimeout(() => {
-                setLoading(false)
-                navigate(`/home/chat/${data.group._id}`)
-            }, 200);
+        } catch (error) {
+            console.error("Error iniciando chat privado:", error);
         }
-
-    } catch (err) {
-        console.error("Error creando grupo:", err);
-    }
-};
+    };
 
 
 
-return (
-    <div className="start-chat-screen">
 
-        <h2 className="header">Iniciar Chat o Crear Grupo</h2>
+    const toggleSelect = (id) => {
+        setSelectedUsers(prev =>
+            prev.includes(id)
+                ? prev.filter(u => u !== id)
+                : [...prev, id]
+        );
+    };
 
-        {message && (
-            <div className={`alert ${message.type}`}>
-                {message.text}
-            </div>
-        )}
 
-        {/* Lista de usuarios */}
-        <h3 className="users">Usuarios</h3>
+    const createGroup = async () => {
+        try {
+            if (!groupName.trim() || selectedUsers.length < 2) {
+                return alert("El grupo necesita un nombre y al menos 2 miembros")
+            };
 
-        <ul className="users-list">
-            {users.map(u => (
-                <li className="user" key={u._id}>
-                    <img
-                        className="avatar"
-                        src={u.avatar || "/default-avatar.png"}
-                    />
+            setLoading(true);
 
-                    <span className="username">{u.username}</span>
+            const formData = new FormData();
+            formData.append("name", groupName);
+            formData.append("ownerId", user._id);
+            formData.append("participants", JSON.stringify(selectedUsers));
 
-                    <button className="chat-btn" onClick={() => startPrivateChat(u._id)}>
-                        Chatear
-                    </button>
+            if (groupAvatar) {
+                formData.append("avatar", groupAvatar);
+            }
 
-                    <input
-                        className="input-group"
-                        type="checkbox"
-                        checked={selectedUsers.includes(u._id)}
-                        onChange={() => toggleSelect(u._id)}
-                    />
-                </li>
-            ))}
-        </ul>
+            const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/group/create`, {
+                method: "POST",
+                headers: { Authorization: "Bearer " + localStorage.getItem("auth_token") },
+                body: formData
+            });
 
-        {/* Crear grupo */}
-        <h3 className="groups-create">Crear Grupo</h3>
+            const data = await res.json();
 
-        <label className="group-name">Nombre del grupo</label>
-        <input
-            className="input-create-group"
-            type="text"
-            value={groupName}
-            onChange={(e) => setGroupName(e.target.value)}
-        />
+            if (data.ok) {
 
-        <label className="settings-label">Avatar</label>
-        <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setGroupAvatar(e.target.files[0])}
-            className="settings-file-input"
-        />
+                setChats(prev => [data.group, ...prev]);
 
-        <button className="create-group-btn" onClick={createGroup} disabled={loading}>
-            Crear Grupo
-        </button>
-    </div>
-);
+
+                socket.emit("new_chat", data.group);
+
+
+                setSelectedChat(data.group);
+
+                setTimeout(() => {
+                    setLoading(false)
+                    navigate(`/home/chat/${data.group._id}`)
+                }, 200);
+            }
+
+        } catch (err) {
+            console.error("Error creando grupo:", err);
+        }
+    };
+
+
+
+    return (
+        <div className="start-chat-screen">
+
+            <h2 className="header">Iniciar Chat o Crear Grupo</h2>
+
+            {message && (
+                <div className={`alert ${message.type}`}>
+                    {message.text}
+                </div>
+            )}
+
+            {/* Lista de usuarios */}
+            <h3 className="users">Usuarios</h3>
+
+            <ul className="users-list">
+                {users.map(u => (
+                    <li className="user" key={u._id}>
+                        <img
+                            className="avatar"
+                            src={u.avatar || "/default-avatar.png"}
+                        />
+
+                        <span className="username">{u.username}</span>
+
+                        <button className="chat-btn" onClick={() => startPrivateChat(u._id)}>
+                            Chatear
+                        </button>
+
+                        <input
+                            className="input-group"
+                            type="checkbox"
+                            checked={selectedUsers.includes(u._id)}
+                            onChange={() => toggleSelect(u._id)}
+                        />
+                    </li>
+                ))}
+            </ul>
+
+            {/* Crear grupo */}
+            <h3 className="groups-create">Crear Grupo</h3>
+
+            <label className="group-name">Nombre del grupo</label>
+            <input
+                className="input-create-group"
+                type="text"
+                value={groupName}
+                onChange={(e) => setGroupName(e.target.value)}
+            />
+
+            <label className="settings-label">Avatar</label>
+            <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setGroupAvatar(e.target.files[0])}
+                className="settings-file-input"
+            />
+
+            <button className="create-group-btn" onClick={createGroup} disabled={loading}>
+                Crear Grupo
+            </button>
+        </div>
+    );
 
 };
 
