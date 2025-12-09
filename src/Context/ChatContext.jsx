@@ -37,6 +37,10 @@ export const ChatProvider = ({ children }) => {
 
 
     useEffect(() => {
+        console.log(" socket:", socket);
+        console.log(" user:", user);
+        console.log(" chats:", chats);
+        console.log(" chats.length:", chats.length);
         if (!socketReady || !user?._id || chats.length === 0) return;
 
         console.log("UNIENDO A SALAS:", chats.map(c => c._id));
