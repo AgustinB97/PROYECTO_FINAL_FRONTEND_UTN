@@ -100,7 +100,7 @@ const createGroup = async () => {
             name: groupName,
             ownerId: user._id,
             participants: [...selectedUsers],
-            avatar: null
+            avatar: groupAvatar
         };
 
         const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/group/create`, {
@@ -183,12 +183,12 @@ return (
             onChange={(e) => setGroupName(e.target.value)}
         />
 
-        <label className="avatar-group">Avatar (URL opcional)</label>
+        <label className="settings-label">Avatar</label>
         <input
-            className="avatar-input"
-            type="text"
-            value={groupAvatar}
-            onChange={(e) => setGroupAvatar(e.target.value)}
+            type="file"
+            accept="image/*"
+            onChange={(e) => setGroupAvatar(e.target.files[0])}
+            className="settings-file-input"
         />
 
         <button className="create-group-btn" onClick={createGroup} disabled={loading}>
