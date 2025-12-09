@@ -123,14 +123,6 @@ return (
             className="settings-input"
         />
 
-        <label className="settings-label">Avatar (URL)</label>
-        <input
-            type="text"
-            value={avatar}
-            onChange={(e) => setAvatar(e.target.value)}
-            className="settings-input"
-        />
-
         <label className="settings-label">Avatar (Archivo)</label>
         <input
             type="file"
