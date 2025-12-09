@@ -17,33 +17,33 @@ function App() {
   return (
     <AuthContextProvider>
       <SocketProvider>
-        <Routes>
-          <Route path="/" element={<LoginScreen />} />
-          <Route path="/login" element={<LoginScreen />} />
-          <Route path="/register" element={<RegisterScreen />} />
+        <ChatProvider>
+          <Routes>
+            <Route path="/" element={<LoginScreen />} />
+            <Route path="/login" element={<LoginScreen />} />
+            <Route path="/register" element={<RegisterScreen />} />
 
-          <Route element={<AuthMiddleware />}>
-            <Route path="/home" element={
-              <ChatProvider>
+            <Route element={<AuthMiddleware />}>
+              <Route path="/home" element={
                 <InTheSamePage />
-              </ChatProvider>
-            }>
-              <Route
-                index
-                element={
-                  <div className="chatscreen-start">
-                    <img src="" alt="" />
-                  </div>
-                }
-              />
-              <Route path='start-chat' element={<StartChatScreen />} />
-              <Route path="chat/:id" element={<ChatScreen />} />
-              <Route path="settings" element={<ConfigScreen />} />
+              }>
+                <Route
+                  index
+                  element={
+                    <div className="chatscreen-start">
+                      <img src="" alt="" />
+                    </div>
+                  }
+                />
+                <Route path='start-chat' element={<StartChatScreen />} />
+                <Route path="chat/:id" element={<ChatScreen />} />
+                <Route path="settings" element={<ConfigScreen />} />
+              </Route>
             </Route>
-          </Route>
-        </Routes>
-      </SocketProvider>
-    </AuthContextProvider>
+          </Routes>
+        </ChatProvider>
+      </SocketProvider >
+    </AuthContextProvider >
 
   );
 }
