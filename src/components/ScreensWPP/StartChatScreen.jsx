@@ -17,7 +17,7 @@ const StartChatScreen = () => {
     const [selectedUsers, setSelectedUsers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState(null);
-    const socket = socketRef.current 
+
 
     if (!user) return <p>Cargando usuario...</p>;
 
@@ -40,7 +40,7 @@ const StartChatScreen = () => {
 
     const startPrivateChat = async (otherUserId) => {
         setLoading(true);
-
+        const socket = socketRef.current
         try {
             const body = {
                 userAId: user._id,
@@ -90,6 +90,7 @@ const StartChatScreen = () => {
 
 
     const createGroup = async () => {
+        const socket = socketRef.current
         try {
             if (!groupName.trim() || selectedUsers.length < 2) {
                 return alert("El grupo necesita un nombre y al menos 2 miembros")
