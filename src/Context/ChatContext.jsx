@@ -39,6 +39,8 @@ export const ChatProvider = ({ children }) => {
     useEffect(() => {
         if (!socketReady || !user?._id || chats.length === 0) return;
 
+        console.log("UNIENDO A SALAS:", chats.map(c => c._id));
+
         socket.emit("join_user", user._id);
 
         chats.forEach(chat => {
