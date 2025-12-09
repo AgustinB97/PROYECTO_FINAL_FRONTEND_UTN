@@ -93,8 +93,11 @@ export const ChatProvider = ({ children }) => {
             });
         };
 
-        const handleReceiveMessage = (msg) => {
-            const chatId = msg.chatId._id || msg.chatId;
+        const handleReceiveMessage = (data) => {
+            console.log("receive_message recibido:", data);
+
+            const chatId = data.chatId;
+            const msg = data.message;
 
             updateChatLastMessage(chatId, msg);
 

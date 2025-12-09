@@ -12,7 +12,8 @@ export const SocketProvider = ({ children }) => {
     useEffect(() => {
         if (socketRef.current) return;
         const s = io(ENVIRONMENT.URL_API, {
-            transports: ["websocket"],
+            transports: ["polling, websocket"],
+            upgrade: false,
             withCredentials: true,
         });
         socketRef.current = s;
