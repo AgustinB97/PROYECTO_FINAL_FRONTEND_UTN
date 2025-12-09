@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { ChatContext } from "../../Context/ChatContext";
 import { AuthContext } from "../../Context/AuthContext";
 import { SocketContext } from "../../Context/SocketContext";
@@ -39,7 +39,7 @@ const ChatScreen = () => {
 
         setText("");
     };
-    
+
     useEffect(() => {
         const socket = socketRef.current;
         if (!socket) return;
