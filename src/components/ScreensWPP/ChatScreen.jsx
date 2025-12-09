@@ -11,6 +11,10 @@ const ChatScreen = () => {
     const [text, setText] = useState("");
     const [isGroupSettings, setIsGroupSettings] = useState(false);
 
+    useEffect(() => {
+        console.log("SOCKET EN CHATSCREEN:", socketRef.current);
+    }, [socketRef.current]);
+
 
 
 
