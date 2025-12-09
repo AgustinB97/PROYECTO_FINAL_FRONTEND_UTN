@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState} from "react";
 import { ChatContext } from "../../Context/ChatContext";
 import { AuthContext } from "../../Context/AuthContext";
 import { SocketContext } from "../../Context/SocketContext";
@@ -7,7 +7,7 @@ import ENVIRONMENT from "../../config/enviroment";
 const ChatScreen = () => {
     const { selectedChat, setSelectedChat, messages, deleteMessage } = useContext(ChatContext);
     const { user } = useContext(AuthContext);
-    const { socketRef } = useContext(SocketContext);
+    const { sendMessage } = useContext(SocketContext);
     const [text, setText] = useState("");
     const [isGroupSettings, setIsGroupSettings] = useState(false);
 
