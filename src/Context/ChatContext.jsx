@@ -115,6 +115,7 @@ export const ChatProvider = ({ children }) => {
 
         socket.on("new_chat", handleNewChat);
         socket.on("receive_message", handleReceiveMessage);
+        console.log("ChatScreen recibió mensaje:", data);
         socket.on("message_deleted", handleMessageDeleted);
 
         return () => {

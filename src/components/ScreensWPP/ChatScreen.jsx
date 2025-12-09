@@ -13,6 +13,7 @@ const ChatScreen = () => {
 
 
 
+
     const isAdmin = Boolean(
         selectedChat?.isGroup &&
         Array.isArray(selectedChat?.admins) &&
@@ -38,7 +39,20 @@ const ChatScreen = () => {
 
         setText("");
     };
+    
+    useEffect(() => {
+        const socket = socketRef.current;
+        if (!socket) return;
 
+        const debugReceive = (data) => {
+            console.log("ChatScreen — receive_message:", data);
+        };
+
+        socket.on("receive_message", debugReceive);
+
+        return () => socket.off("receive_message", debugReceive);
+
+    }, []);
     const addUserToGroup = async (userId) => {
         const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/${selectedChat._id}/add-user`, {
             method: "POST",
