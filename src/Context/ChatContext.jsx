@@ -45,12 +45,10 @@ export const ChatProvider = ({ children }) => {
         const socket = socketRef.current
         if (!socketReady || !user?._id || chats.length === 0) return;
 
-        const joinChat = (chatId) => {
-            socket.emit("join_chat", chatId);
-        };
+        console.log("UNIENDO A SALAS:", chats.map((c) => c._id));
 
-        chats.forEach(chat => {
-            joinChat(chat._id);
+        chats.forEach((chat) => {
+            socket.emit("join_chat", chat._id);
         });
 
     }, [socketReady, user, chats.length]);
@@ -79,6 +77,7 @@ export const ChatProvider = ({ children }) => {
     useEffect(() => {
         if (!socketReady) return;
         const socket = socketRef.current;
+        if (!socket) return;
 
         const handleNewChat = (chat) => {
             setChats(prev => {
@@ -87,8 +86,8 @@ export const ChatProvider = ({ children }) => {
             });
         };
 
-        const handleReceiveMessage = ({chatId, message}) => {
-            console.log("receive_message recibido:", {chatId, message});
+        const handleReceiveMessage = ({ chatId, message }) => {
+            console.log("receive_message recibido:", { chatId, message });
 
 
             updateChatLastMessage(chatId, message);
@@ -115,7 +114,6 @@ export const ChatProvider = ({ children }) => {
 
         socket.on("new_chat", handleNewChat);
         socket.on("receive_message", handleReceiveMessage);
-        console.log("ChatScreen recibió mensaje:", data);
         socket.on("message_deleted", handleMessageDeleted);
 
         return () => {
@@ -128,7 +126,6 @@ export const ChatProvider = ({ children }) => {
 
 
     const deleteMessage = async (chatId, messageId) => {
-        const socket = socketRef.current
         try {
             const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/message/${messageId}`, {
                 method: "DELETE",
@@ -137,9 +134,6 @@ export const ChatProvider = ({ children }) => {
 
             const data = await res.json();
             if (!data.ok) return console.error(data.message);
-
-            socket?.emit("delete_message", { chatId, messageId });
-            updateChatLastMessage(chatId, data.last_message ?? null);
 
             setMessages(prev => prev.filter(m => m._id !== messageId));
 
