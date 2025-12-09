@@ -7,7 +7,7 @@ import { ChatContext } from "../../Context/ChatContext";
 
 
 const StartChatScreen = () => {
-    const { socket } = useContext(SocketContext);
+    const { socketRef } = useContext(SocketContext);
     const { setChats, setSelectedChat } = useContext(ChatContext);
     const { user } = useContext(AuthContext);
     const navigate = useNavigate();
@@ -17,6 +17,7 @@ const StartChatScreen = () => {
     const [selectedUsers, setSelectedUsers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState(null);
+    const socket = socketRef 
 
     if (!user) return <p>Cargando usuario...</p>;
 
