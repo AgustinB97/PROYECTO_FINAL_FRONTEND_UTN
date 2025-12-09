@@ -17,7 +17,7 @@ const StartChatScreen = () => {
     const [selectedUsers, setSelectedUsers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState(null);
-    const socket = socketRef 
+    const socket = socketRef.current 
 
     if (!user) return <p>Cargando usuario...</p>;
 
