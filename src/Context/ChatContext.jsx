@@ -43,13 +43,7 @@ export const ChatProvider = ({ children }) => {
 
     useEffect(() => {
         const socket = socketRef.current
-        console.log(" socket:", socket);
-        console.log(" user:", user);
-        console.log(" chats:", chats);
-        console.log(" chats.length:", chats.length);
         if (!socketReady || !user?._id || chats.length === 0) return;
-
-        console.log("UNIENDO A SALAS:", chats.map(c => c._id));
 
         const joinChat = (chatId) => {
             socket.emit("join_chat", chatId);
@@ -93,16 +87,14 @@ export const ChatProvider = ({ children }) => {
             });
         };
 
-        const handleReceiveMessage = (data) => {
-            console.log("receive_message recibido:", data);
+        const handleReceiveMessage = ({chatId, message}) => {
+            console.log("receive_message recibido:", {chatId, message});
 
-            const chatId = data.chatId;
-            const msg = data.message;
 
-            updateChatLastMessage(chatId, msg);
+            updateChatLastMessage(chatId, message);
 
             if (selectedChat?._id === chatId) {
-                setMessages(prev => [...prev, msg]);
+                setMessages(prev => [...prev, message]);
             }
         };
 

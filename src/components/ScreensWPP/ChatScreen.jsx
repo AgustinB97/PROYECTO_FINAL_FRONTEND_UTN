@@ -29,15 +29,11 @@ const ChatScreen = () => {
         const socket = socketRef.current;
         if (!text.trim()) return;
 
-        /*         if (!socket) {
-                    console.error("Socket no inicializado");
-                    return;
-                    
-                } */
         socket.emit("send_message", {
             chatId: selectedChat._id,
-            sender: user._id,
+            senderId: user._id,
             content: text,
+            type: "text"
         });
 
         setText("");
