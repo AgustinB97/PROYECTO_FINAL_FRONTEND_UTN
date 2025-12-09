@@ -2,13 +2,11 @@ import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../Context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import ENVIRONMENT from "../../config/enviroment";
-import { SocketContext } from "../../Context/SocketContext";
 import { ChatContext } from "../../Context/ChatContext";
 
 
 const StartChatScreen = () => {
-    const { socketRef } = useContext(SocketContext);
-    const { setChats, setSelectedChat } = useContext(ChatContext);
+    const { setSelectedChat } = useContext(ChatContext);
     const { user } = useContext(AuthContext);
     const navigate = useNavigate();
     const [users, setUsers] = useState([]);
@@ -38,44 +36,69 @@ const StartChatScreen = () => {
     }, [user]);
 
 
-    const startPrivateChat = async (otherUserId) => {
-        setLoading(true);
-        const socket = socketRef.current
-        try {
-            const body = {
-                userAId: user._id,
-                userBId: otherUserId
-            };
+const startPrivateChat = async (otherUserId) => {
+    setLoading(true);
+    try {
+        const body = {
+            userAId: user._id,
+            userBId: otherUserId
+        };
 
-            const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/private`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(body)
-            });
+        const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/private`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+        });
 
-            const data = await res.json();
+        const data = await res.json();
+        setLoading(false);
 
-            setLoading(false);
+        if (!data.ok) return;
+        
+        navigate(`/home/chat/${data.chat._id}`);
+        setSelectedChat({ _id: data.chat._id });
 
-            if (!data.ok) return;
+    } catch (error) {
+        console.error("Error iniciando chat privado:", error);
+    }
+};
 
-            setChats(prev => {
-                const exists = prev.find(c => c._id === data.chat._id);
-                if (exists) return prev;
-
-                return [data.chat, ...prev];
-            });
-
-            socket.emit("new_chat", data.chat);
-
-            setSelectedChat(data.chat);
-
-            navigate(`/home/chat/${data.chat._id}`);
-
-        } catch (error) {
-            console.error("Error iniciando chat privado:", error);
+const createGroup = async () => {
+    try {
+        if (!groupName.trim() || selectedUsers.length < 2) {
+            return alert("El grupo necesita un nombre y al menos 2 miembros");
         }
-    };
+
+        setLoading(true);
+
+        const formData = new FormData();
+        formData.append("name", groupName);
+        formData.append("ownerId", user._id);
+        formData.append("participants", JSON.stringify(selectedUsers));
+
+        if (groupAvatar) {
+            formData.append("avatar", groupAvatar);
+        }
+
+        const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/group/create`, {
+            method: "POST",
+            headers: { Authorization: "Bearer " + localStorage.getItem("auth_token") },
+            body: formData
+        });
+
+        const data = await res.json();
+        setLoading(false);
+
+        if (!data.ok) return;
+
+        navigate(`/home/chat/${data.group._id}`);
+        setSelectedChat({ _id: data.group._id });
+
+    } catch (err) {
+        console.error("Error creando grupo:", err);
+    }
+};
+
 
 
 
@@ -87,55 +110,6 @@ const StartChatScreen = () => {
                 : [...prev, id]
         );
     };
-
-
-    const createGroup = async () => {
-        const socket = socketRef.current
-        try {
-            if (!groupName.trim() || selectedUsers.length < 2) {
-                return alert("El grupo necesita un nombre y al menos 2 miembros")
-            };
-
-            setLoading(true);
-
-            const formData = new FormData();
-            formData.append("name", groupName);
-            formData.append("ownerId", user._id);
-            formData.append("participants", JSON.stringify(selectedUsers));
-
-            if (groupAvatar) {
-                formData.append("avatar", groupAvatar);
-            }
-
-            const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/group/create`, {
-                method: "POST",
-                headers: { Authorization: "Bearer " + localStorage.getItem("auth_token") },
-                body: formData
-            });
-
-            const data = await res.json();
-
-            if (data.ok) {
-
-                setChats(prev => [data.group, ...prev]);
-
-
-                socket.emit("new_chat", data.group);
-
-
-                setSelectedChat(data.group);
-
-                setTimeout(() => {
-                    setLoading(false)
-                    navigate(`/home/chat/${data.group._id}`)
-                }, 200);
-            }
-
-        } catch (err) {
-            console.error("Error creando grupo:", err);
-        }
-    };
-
 
 
     return (

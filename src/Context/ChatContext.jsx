@@ -80,11 +80,18 @@ export const ChatProvider = ({ children }) => {
         if (!socket) return;
 
         const handleNewChat = (chat) => {
+            const socket = socketRef.current;
+
             setChats(prev => {
                 if (prev.some(c => c._id === chat._id)) return prev;
                 return [chat, ...prev];
             });
+
+            socket.emit("join_chat", chat._id);
+
+            setSelectedChat(prev => prev ?? chat);
         };
+
 
         const handleReceiveMessage = ({ chatId, message }) => {
             console.log("receive_message recibido:", { chatId, message });
@@ -92,17 +99,15 @@ export const ChatProvider = ({ children }) => {
 
             updateChatLastMessage(chatId, message);
 
-            if (selectedChat?._id === chatId) {
-                setMessages(prev => [...prev, message]);
-            }
+            setSelectedChat(prev => {
+                if (prev?._id === chatId) {
+                    setMessages(m => [...m, message]);
+                }
+                return prev;
+            });
         };
 
         const handleMessageDeleted = ({ chatId, messageId, last_message }) => {
-
-            console.log("EVENTO message_deleted RECIBIDO:");
-            console.log("chatId:", chatId);
-            console.log("messageId:", messageId);
-            console.log("last_message:", last_message);
 
             if (selectedChat?._id === chatId) {
                 setMessages(prev => prev.filter(m => m._id !== messageId));
@@ -122,7 +127,7 @@ export const ChatProvider = ({ children }) => {
             socket.off("message_deleted", handleMessageDeleted);
         };
 
-    }, [socketReady, selectedChat]);
+    }, [socketReady]);
 
 
     const deleteMessage = async (chatId, messageId) => {
