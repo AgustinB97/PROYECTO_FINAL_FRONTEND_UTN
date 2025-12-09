@@ -13,7 +13,12 @@ export const ChatProvider = ({ children }) => {
     const [selectedChat, setSelectedChat] = useState(null);
     const [messages, setMessages] = useState([]);
 
-    const socket = socketRef.current
+
+
+    useEffect(() => {
+        if (!socketRef.current || !user?._id) return;
+        socketRef.current.emit("register_user", user._id);
+    }, [socketRef, user]);
 
 
     useEffect(() => {
@@ -37,6 +42,7 @@ export const ChatProvider = ({ children }) => {
 
 
     useEffect(() => {
+        const socket = socketRef.current
         console.log(" socket:", socket);
         console.log(" user:", user);
         console.log(" chats:", chats);
@@ -45,7 +51,9 @@ export const ChatProvider = ({ children }) => {
 
         console.log("UNIENDO A SALAS:", chats.map(c => c._id));
 
-        socket.emit("join_user", user._id);
+        const joinChat = (chatId) => {
+            socket.emit("join_chat", chatId);
+        };
 
         chats.forEach(chat => {
             joinChat(chat._id);
@@ -123,6 +131,7 @@ export const ChatProvider = ({ children }) => {
 
 
     const deleteMessage = async (chatId, messageId) => {
+        const socket = socketRef.current
         try {
             const res = await fetch(`${ENVIRONMENT.URL_API}/api/chat/message/${messageId}`, {
                 method: "DELETE",

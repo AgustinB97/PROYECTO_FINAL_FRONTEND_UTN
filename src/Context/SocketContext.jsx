@@ -4,63 +4,48 @@ import ENVIRONMENT from "../config/enviroment";
 
 export const SocketContext = createContext(null);
 
-export const SocketProvider = ({ children, userId }) => {
+export const SocketProvider = ({ children }) => {
     const socketRef = useRef(null);
     const [socketReady, setSocketReady] = useState(false);
 
+
     useEffect(() => {
-        if (!userId) return;
+        if (socketRef.current) return;
+        const s = io(ENVIRONMENT.URL_API, {
+            transports: ["websocket"],
+            withCredentials: true,
+        });
+        socketRef.current = socket;
 
-        if (!socketRef.current) {
-            socketRef.current = io(ENVIRONMENT.URL_API, {
-                transports: ["websocket"],
-                withCredentials: true,
-            });
-        }
-
-        const socket = socketRef.current;
-
-        const handleConnect = () => {
-            console.log("SOCKET CONECTADO");
-            socket.emit("register_user", userId);
+        socket.on("connect", () => {
+            console.log("SOCKET CONNECTED", socket.id);
             setSocketReady(true);
-        };
+        });
 
-        const handleDisconnect = () => {
+        socket.on("disconnect", () => {
+            console.log("SOCKET DISCONNECTED");
             setSocketReady(false);
-        };
-
-        socket.on("connect", handleConnect);
-        socket.on("disconnect", handleDisconnect);
+        });
 
         return () => {
-            socket.off("connect", handleConnect);
-            socket.off("disconnect", handleDisconnect);
+            try {
+                socketRef.current?.disconnect();
+            } catch (e) {
+                console.warn("Error al desconectar socket:", e);
+            }
         };
-    }, [userId]);
+    }, []);
 
     const joinChat = (chatId) => {
         socketRef.current?.emit("join_chat", chatId);
     };
 
     const sendMessage = ({ chatId, content, type = "text", senderId }) => {
-        socketRef.current?.emit("send_message", {
-            chatId,
-            content,
-            type,
-            senderId,
-        });
+        socketRef.current?.emit("send_message", { chatId, content, type, senderId });
     };
 
     return (
-        <SocketContext.Provider
-            value={{
-                socketRef,
-                socketReady,
-                joinChat,
-                sendMessage,
-            }}
-        >
+        <SocketContext.Provider value={{ socketRef, socketReady, joinChat, sendMessage }}>
             {children}
         </SocketContext.Provider>
     );
