@@ -7,14 +7,14 @@ import ENVIRONMENT from "../config/enviroment";
 export const ChatContext = createContext();
 
 export const ChatProvider = ({ children }) => {
-    const { socketRef , socketReady } = useContext(SocketContext);
+    const { socketRef, socketReady } = useContext(SocketContext);
     const { user } = useContext(AuthContext);
     const [chats, setChats] = useState([]);
     const [selectedChat, setSelectedChat] = useState(null);
     const [messages, setMessages] = useState([]);
 
     const socket = socketRef.current
-    
+
 
     useEffect(() => {
         if (!user?._id) return;
@@ -90,6 +90,10 @@ export const ChatProvider = ({ children }) => {
 
         const handleMessageDeleted = ({ chatId, messageId, last_message }) => {
 
+            console.log("EVENTO message_deleted RECIBIDO:");
+            console.log("chatId:", chatId);
+            console.log("messageId:", messageId);
+            console.log("last_message:", last_message);
 
             if (selectedChat?._id === chatId) {
                 setMessages(prev => prev.filter(m => m._id !== messageId));
