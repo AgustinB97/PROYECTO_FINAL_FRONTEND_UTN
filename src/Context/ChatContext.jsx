@@ -84,6 +84,7 @@ export const ChatProvider = ({ children }) => {
 
     useEffect(() => {
         if (!socketReady) return;
+        const socket = socketRef.current;
 
         const handleNewChat = (chat) => {
             setChats(prev => {
