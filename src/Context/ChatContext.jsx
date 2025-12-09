@@ -25,8 +25,19 @@ export const ChatProvider = ({ children }) => {
         if (!user?._id) return;
 
         getUserChats(user._id).then(res => {
-            if (res.ok) setChats(res.chats);
-            else console.error(res.message);
+            if (!res.ok) return console.error(res.message);
+
+            setChats(prev => {
+                const combined = [...prev];
+
+                res.chats.forEach(chat => {
+                    if (!combined.some(c => c._id === chat._id)) {
+                        combined.push(chat);
+                    }
+                });
+
+                return combined;
+            });
         });
     }, [user]);
 
