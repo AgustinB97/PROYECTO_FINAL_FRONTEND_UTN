@@ -15,21 +15,21 @@ export const SocketProvider = ({ children }) => {
             transports: ["websocket"],
             withCredentials: true,
         });
-        socketRef.current = socket;
+        socketRef.current = s;
 
-        socket.on("connect", () => {
+        s.on("connect", () => {
             console.log("SOCKET CONNECTED", socket.id);
             setSocketReady(true);
         });
 
-        socket.on("disconnect", () => {
+        s.on("disconnect", () => {
             console.log("SOCKET DISCONNECTED");
             setSocketReady(false);
         });
 
         return () => {
             try {
-                socketRef.current?.disconnect();
+                s.disconnect();
             } catch (e) {
                 console.warn("Error al desconectar socket:", e);
             }
