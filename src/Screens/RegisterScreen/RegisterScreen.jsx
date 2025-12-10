@@ -46,9 +46,9 @@ const RegisterScreen = () => {
         initial_form_state, onRegister
     )
     return (
-        <div>
-            <h1>Registrate</h1>
-            <form onSubmit={handleSubmit}>
+        <div className="register-container">
+            <h2 className="register-title">Registrate</h2>
+            <form className="register-form" onSubmit={handleSubmit}>
                 <div className="form-field">
                     <label htmlFor="username">USUARIO:</label>
                     <input type="text" placeholder='name' value={form_state[REGISTER_FORM_FIELDS.USERNAME]} name={REGISTER_FORM_FIELDS.USERNAME} id={'username'} onChange={onInputChange} />
@@ -70,11 +70,11 @@ const RegisterScreen = () => {
                 {response && <span style={{ color: 'green' }}>Usuario registrado con exito</span>}
                 {
                     loading
-                        ? <button disabled>Registrando</button>
-                        : <button>Registrarse</button>
+                        ? <button disabled className= "login-btn">Registrando</button>
+                        : <button className= "register-btn">Registrarse</button>
                 }
             </form>
-            <button onClick={() => navigate("/login")}>Login</button>
+            <button className= "login-btn" onClick={() => navigate("/login")}>Login</button>
         </div>
     )
 
