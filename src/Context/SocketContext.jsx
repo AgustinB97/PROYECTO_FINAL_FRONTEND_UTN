@@ -18,12 +18,10 @@ export const SocketProvider = ({ children }) => {
         socketRef.current = s;
 
         s.on("connect", () => {
-            console.log("SOCKET CONNECTED", s.id);
             setSocketReady(true);
         });
 
         s.on("disconnect", () => {
-            console.log("SOCKET DISCONNECTED");
             setSocketReady(false);
         });
 
@@ -41,7 +39,6 @@ export const SocketProvider = ({ children }) => {
     };
 
     const sendMessage = ({ chatId, content, type = "text", senderId }) => {
-        console.log("SocketContext → emit send_message:", { chatId, content, type, senderId }, socketRef.current);
         socketRef.current?.emit("send_message", { chatId, content, type, senderId });
     };
 

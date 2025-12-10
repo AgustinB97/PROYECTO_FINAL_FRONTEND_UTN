@@ -25,11 +25,6 @@ const ChatScreen = () => {
     const send = (e) => {
         e.preventDefault();
         if (!text.trim() || !selectedChat?._id) return;
-        console.log("ENVIANDO AL SOCKET:", {
-            chatId: selectedChat._id,
-            content: text,
-            senderId: user._id
-        });
         sendMessage({
             chatId: selectedChat._id,
             content: text,

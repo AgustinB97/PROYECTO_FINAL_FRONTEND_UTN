@@ -57,8 +57,6 @@ export const ChatProvider = ({ children }) => {
         const socket = socketRef.current
         if (!socketReady || !user?._id || chats.length === 0) return;
 
-        console.log("UNIENDO A SALAS:", chats.map((c) => c._id));
-
         chats.forEach((chat) => {
             socket.emit("join_chat", chat._id);
         });
@@ -106,7 +104,6 @@ export const ChatProvider = ({ children }) => {
 
 
         const handleReceiveMessage = ({ chatId, message }) => {
-            console.log("receive_message recibido:", { chatId, message });
 
 
             updateChatLastMessage(chatId, message);
