@@ -483,84 +483,121 @@ body {
                 display: flex;
                 flex-direction: column;
 
-.chat-list {
-    width: 100%;
-    max-width: 920px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    padding: 12px;
-    gap: 4px;
+                .chat-list {
+                    width: 100%;
+                    max-width: 920px;
+                    margin: 0 auto;
+                    display: flex;
+                    flex-direction: column;
+                    padding: 12px;
+                    gap: 4px;
 
-    .message-row {
-        display: flex;
-        align-items: flex-end;
-        gap: 6px;
-        width: 100%;
-        animation: fadeIn 0.15s ease;
+                    .message-row {
+                        display: flex;
+                        align-items: flex-end;
+                        gap: 6px;
+                        width: 100%;
+                        animation: fadeIn 0.15s ease;
 
-        &.other {
-            justify-content: flex-start;
-        }
+                        &.other {
+                            justify-content: flex-start;
+                        }
 
-        &.me {
-            justify-content: flex-end;
-        }
+                        &.me {
+                            justify-content: flex-end;
+                        }
 
-        .msg-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            object-fit: cover;
-            flex-shrink: 0;
-            background: #ddd;
-        }
+                        .msg-avatar {
+                            width: 32px;
+                            height: 32px;
+                            border-radius: 50%;
+                            object-fit: cover;
+                            flex-shrink: 0;
+                            background: #ddd;
+                        }
 
-        .message-content {
-            display: flex;
-            flex-direction: column;
-            max-width: 70%;
+                        .message-content {
+                            display: flex;
+                            flex-direction: row;
+                            align-items: flex-end;
+                            gap: 6px;
+                            max-width: 70%;
+                            position: relative;
 
-            .msg-bubble {
-                padding: 10px 12px;
-                border-radius: 12px;
-                font-size: 14px;
-                line-height: 1.35;
-                white-space: pre-wrap;
-                box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);
-            }
+                            .msg-bubble {
+                                padding: 10px 12px;
+                                border-radius: 12px;
+                                font-size: 14px;
+                                line-height: 1.35;
+                                white-space: pre-wrap;
+                                box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);
+                            }
 
-            .message-row.other & .msg-bubble {
-                background: #ffffff;
-                border: 1px solid #e6e6e6;
-                color: #111;
-            }
+                            .message-hour {
+                                font-size: 11px;
+                                color: #777;
+                                align-self: flex-end;
+                                padding-bottom: 3px;
+                                white-space: nowrap;
+                            }
 
-            .message-row.me & .msg-bubble {
-                background: #d9fdd3;
-                color: #111;
-            }
+                            .delete-message-btn {
+                                background: transparent;
+                                border: none;
+                                cursor: pointer;
+                                font-size: 14px;
+                                padding: 4px 6px;
+                                border-radius: 6px;
+                                height: 100%;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                color: #666;
 
-            .message-hour {
-                font-size: 11px;
-                color: #777;
-                margin-top: 3px;
-                align-self: flex-end;
-            }
-        }
-    }
-}
+                                transition: 0.15s ease;
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(3px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
+                                &:hover {
+                                    background: rgba(0, 0, 0, 0.06);
+                                }
+
+                                &:disabled {
+                                    opacity: 0.3;
+                                    pointer-events: none;
+                                }
+                            }
+
+                            .message-row.other & .msg-bubble {
+                                background: #ffffff;
+                                border: 1px solid #e6e6e6;
+                                color: #111;
+                            }
+
+                            .message-row.me & .msg-bubble {
+                                background: #d9fdd3;
+                                color: #111;
+                            }
+
+                            .message-hour {
+                                font-size: 11px;
+                                color: #777;
+                                margin-top: 3px;
+                                align-self: flex-end;
+                            }
+                        }
+                    }
+                }
+
+                @keyframes fadeIn {
+                    from {
+                        opacity: 0;
+                        transform: translateY(3px);
+                    }
+
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
 
             }
 
