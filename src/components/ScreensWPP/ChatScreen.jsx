@@ -15,12 +15,10 @@ const ChatScreen = () => {
         selectedChat?.isGroup &&
         Array.isArray(selectedChat?.admins) &&
         selectedChat.admins.some(a =>
-            a &&
-            a._id &&
-            user?._id &&
-            String(a._id) === String(user._id)
+            String(a?._id || a) === String(user?._id)
         )
     );
+
 
     const send = (e) => {
         e.preventDefault();
