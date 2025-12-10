@@ -67,7 +67,7 @@ const LoginScreen = () => {
           <label htmlFor="email">Email: </label>
           <input
             type="text"
-            placeholder="agus@algo.com"
+            placeholder="example@gmail.com"
             value={form_state.email}
             name="email"
             onChange={onInputChange}

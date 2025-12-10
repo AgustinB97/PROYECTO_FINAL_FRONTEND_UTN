@@ -801,7 +801,7 @@ body {
         transition: background 0.25s, transform 0.15s;
 
         &:hover {
-            background: #20bd59;
+            background: #2ca4dc;
             transform: translateY(-2px);
         }
 
@@ -828,14 +828,6 @@ body {
         display: flex;
         flex-direction: column;
         gap: 20px;
-
-        .register-title {
-            text-align: center;
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 5px;
-        }
 
         .form-field {
             display: flex;

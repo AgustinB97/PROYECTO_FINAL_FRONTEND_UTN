@@ -47,7 +47,6 @@ const RegisterScreen = () => {
     )
     return (
         <div className="register-container">
-            <h2 className="register-title">Registrate</h2>
             <form className="register-form" onSubmit={handleSubmit}>
                 <div className="form-field">
                     <label htmlFor="username">USUARIO:</label>
