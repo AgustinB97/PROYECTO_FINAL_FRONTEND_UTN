@@ -131,7 +131,7 @@ npm install
 
 Configurar .env con la URL de tu backend:
 
-REACT_APP_API_URL=https://tu-backend.vercel.app
+REACT_APP_API_URL=https://tu-backend.app
 
 
 Ejecutar la app:
@@ -140,12 +140,38 @@ npm start
 
 ------------------------------------------------------------------------------------------------------------------------------
 
-Notas sobre deployment y problemas conocidos
+Notas sobre Deployment y Problemas Conocidos
 
-Actualmente el login en producción no funciona correctamente, debido a problemas de CORS y manejo de cookies con socket.io.
+Durante el desarrollo del proyecto surgieron varios desafíos técnicos, especialmente relacionados con tiempo real (WebSockets) y despliegue, que influyeron en el comportamiento final de la aplicación. A continuación se detallan los puntos más relevantes, junto con consideraciones para futuras mejoras.
 
-Primeramente tuve problemas con el socket.io con el manejo on time de la informacion (si bien el back y la bd respondian bien y el chatscreen y la contactlist actualizaban al mandar un mensaje, al borrarlo o al crear nuevos grupos o chats estos no se cargaban en la contactlist hasta refrescar la pagina), al intentar fixear termine rompiendo todo al punto de no poder loguear siquiera. 
+Deployment
 
-Las imágenes anteriormente se guardaban de manera local; ahora se cargan en Cloudinary, al cambiar a Cloudinary logre que no me tire fallos pero tampoco logre se guarden bien los avatares.
+Inicialmente intenté desplegar la API en Vercel, pero descubrí que la plataforma no soporta WebSockets ni long polling, algo fundamental para Socket.IO.
+Este punto generó bastante tiempo de investigación hasta identificar la causa.
+Finalmente, el backend se migró correctamente a Railway, donde los sockets funcionan sin limitaciones.
 
-El proyecto requiere ajustes de CORS, cookies y conexión de sockets para que el login y el chat funcionen correctamente en producción.
+Problemas Conocidos / Mejoras Pendientes
+
+1. Manejo de grupos y sincronización visual
+
+La aplicación es completamente funcional, pero aún tiene algunos detalles a pulir:
+
+Al crear un grupo nuevo, la lista de chats no siempre refleja el cambio de inmediato; en algunos casos requiere un refresh manual (F5).
+
+Sería ideal que los usuarios no administradores puedan abandonar el grupo desde la interfaz.
+
+Estas mejoras implican ajustar la lógica de sincronización entre el backend y el frontend mediante Socket.IO.
+
+2. Avatares en chats grupales
+
+En algunos escenarios, los avatares de los miembros del grupo no cargan correctamente, especialmente despues del primer render
+
+3. Eliminación de mensajes
+
+La eliminación funciona correctamente, pero:
+
+Desde la perspectiva del otro usuario, el mensaje borrado no desaparece en tiempo real.
+
+Conclusión
+
+A pesar de estos detalles, la aplicación es totalmente funcional. Durante el desarrollo se resolvieron desafíos importantes, se migró correctamente la api y se implementó mensajería en tiempo real, chats grupales, administración de usuarios y manejo de archivos (avatars).
