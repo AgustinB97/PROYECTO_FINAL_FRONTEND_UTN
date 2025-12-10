@@ -42,6 +42,7 @@ export const ChatProvider = ({ children }) => {
     }, [user]);
 
 
+
     useEffect(() => {
         if (!selectedChat?._id) return;
 
@@ -161,6 +162,7 @@ export const ChatProvider = ({ children }) => {
     return (
         <ChatContext.Provider value={{
             chats,
+            setChats,
             selectedChat,
             messages,
             setSelectedChat,
