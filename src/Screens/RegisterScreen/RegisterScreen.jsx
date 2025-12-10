@@ -58,7 +58,7 @@ const RegisterScreen = () => {
                     <input type="text" placeholder='example@gmail.com' value={form_state[REGISTER_FORM_FIELDS.EMAIL]} name={REGISTER_FORM_FIELDS.EMAIL} id={'email'} onChange={onInputChange} />
                 </div>
                 <div className="form-field">
-                    <label htmlFor="password">Contrasenia:</label>
+                    <label htmlFor="password">Contraseña:</label>
                     <input type="text" placeholder='password123' value={form_state[REGISTER_FORM_FIELDS.PASSWORD]} name={REGISTER_FORM_FIELDS.PASSWORD} id={'password'} onChange={onInputChange} />
                 </div>
                 <div className="form-field">
