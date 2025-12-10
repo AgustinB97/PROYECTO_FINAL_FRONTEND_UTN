@@ -776,9 +776,10 @@ body {
             transition: background 0.25s, transform 0.15s;
 
             &:hover {
-                background: darken(var(--main-color), 8%);
+                background: #20bd59;
                 transform: translateY(-2px);
             }
+
 
             &:disabled {
                 background: #ccc;
@@ -800,8 +801,118 @@ body {
         transition: background 0.25s, transform 0.15s;
 
         &:hover {
-            background: darken(var(--accent), 8%);
+            background: #20bd59;
             transform: translateY(-2px);
+        }
+
+    }
+}
+
+.Register-wrapper {
+    width: 100%;
+    min-height: 100vh;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background: var(--background);
+    padding: 20px;
+
+    .Register-container {
+        background: var(--panel);
+        width: 100%;
+        max-width: 420px;
+        padding: 30px 35px;
+
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+
+        h2 {
+            text-align: center;
+            color: var(--text-dark);
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .register-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+
+            input {
+                padding: 10px 12px;
+
+                background: var(--background);
+                border: 1px solid var(--gray-light);
+                border-radius: 8px;
+
+                outline: none;
+                transition: 0.2s ease;
+                font-size: 14px;
+
+                &:focus {
+                    border-color: var(--main-color);
+                    box-shadow: 0 0 0 2px rgba(37, 211, 102, 0.20);
+                }
+            }
+        }
+
+        .register-btn {
+            width: 100%;
+            padding: 12px 0;
+
+            background: var(--main-color);
+            border: none;
+            border-radius: 10px;
+
+            font-size: 15px;
+            color: white;
+            cursor: pointer;
+
+            transition: 0.2s ease;
+
+            &:hover {
+                background: #20bd59;
+                transform: translateY(-2px);
+            }
+        }
+
+        .secondary-btn {
+            width: 100%;
+            padding: 10px 0;
+
+            background: transparent;
+            border: 1px solid var(--accent);
+
+            color: var(--accent);
+            border-radius: 10px;
+            font-size: 14px;
+
+            cursor: pointer;
+            transition: 0.2s ease;
+
+            &:hover {
+                background: var(--accent);
+                color: white;
+                transform: translateY(-2px);
+            }
+        }
+
+        .register-message-ok {
+            color: var(--main-color);
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .register-message-error {
+            color: rgb(220, 0, 0);
+            text-align: center;
+            font-size: 14px;
         }
     }
 }
