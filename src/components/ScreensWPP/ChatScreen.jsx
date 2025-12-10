@@ -172,18 +172,36 @@ const ChatScreen = () => {
                             {messages.map((msg, index) => {
                                 const isMine = (msg.sender?._id ?? msg.sender) === user._id;
                                 return (
-                                    <li key={msg._id || index} className={`message ${isMine ? "message__me" : "message__other"}`}>
-                                        {!isMine && selectedChat?.isGroup && msg.sender?.avatar && (
-                                            <img src={msg.sender.avatar} className="msg-avatar" alt="avatar" />
+                                    <li key={msg._id || index}
+                                        className={`message-row ${isMine ? "me" : "other"}`}>
+
+                                        {!isMine && selectedChat.isGroup && (
+                                            <img
+                                                src={msg.sender?.avatar || "/default-avatar.png"}
+                                                className="msg-avatar"
+                                                alt="avatar"
+                                            />
                                         )}
-                                        <div className="msg-bubble">{msg.content}</div>
-                                        <span className="message-hour">
-                                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                                        </span>
-                                        {isMine && (
-                                            <button className="delete-message-btn" disabled={!msg._id} onClick={() => deleteMessage(selectedChat._id, msg._id)}>🗑</button>
-                                        )}
+
+                                        <div className="message-content">
+                                            <div className="msg-bubble">{msg.content}</div>
+
+                                            <span className="message-hour">
+                                                {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                                            </span>
+
+                                            {isMine && (
+                                                <button
+                                                    className="delete-message-btn"
+                                                    disabled={!msg._id}
+                                                    onClick={() => deleteMessage(selectedChat._id, msg._id)}
+                                                >
+                                                    🗑
+                                                </button>
+                                            )}
+                                        </div>
                                     </li>
+
                                 );
                             })}
                         </ul>
