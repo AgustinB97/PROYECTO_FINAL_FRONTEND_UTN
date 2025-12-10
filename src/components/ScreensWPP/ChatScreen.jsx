@@ -67,13 +67,33 @@ const ChatScreen = () => {
     if (!selectedChat) return <p>Cargando chat...</p>;
 
 
+    const otherUser = !selectedChat.isGroup
+        ? selectedChat.members?.find(m => m._id !== user._id)
+        : null;
+
+
+    const headerAvatar = selectedChat.isGroup
+        ? selectedChat.avatar
+        : otherUser?.avatar;
+
+    const headerName = selectedChat.isGroup
+        ? selectedChat.name
+        : otherUser?.username;
+
     return (
         <div className="chat-screen">
             {/* HEADER */}
             <div className="contact-nav">
                 <div className="contact-nav__avatar-name">
-                    <img src={selectedChat.avatar || "/default-avatar.png"} className="contact-nav__avatar" alt="avatar" />
-                    <h3 className="contact-nav__name">{selectedChat.name}</h3>
+                    <img
+                        src={headerAvatar || "/default-avatar.png"}
+                        className="contact-nav__avatar"
+                        alt="avatar"
+                    />
+
+                    <h3 className="contact-nav__name">
+                        {headerName}
+                    </h3>
                 </div>
                 {selectedChat.isGroup && isAdmin && (
                     <button className="group-settings-btn" onClick={() => setIsGroupSettings(prev => !prev)}>⚙️</button>
