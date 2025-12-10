@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { ChatContext } from "../../Context/ChatContext";
 import { AuthContext } from "../../Context/AuthContext";
 import { SocketContext } from "../../Context/SocketContext";
@@ -63,7 +63,7 @@ const ChatScreen = () => {
         if (data.ok) setSelectedChat(data.group);
         else alert(data.message);
     };
-    
+
     useEffect(() => {
         const loadUsers = async () => {
             try {
