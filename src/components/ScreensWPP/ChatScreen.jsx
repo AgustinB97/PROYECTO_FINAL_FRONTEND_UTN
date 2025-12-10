@@ -65,13 +65,19 @@ const ChatScreen = () => {
     };
 
     useEffect(() => {
+        if (!user?._id) return;
         const loadUsers = async () => {
             try {
                 const res = await fetch(`${ENVIRONMENT.URL_API}/api/users`);
                 const data = await res.json();
 
                 if (data.ok) {
-                    setAllUsers(data.users.filter(u => u._id !== user._id));
+                    setAllUsers(
+                        data.users
+                            .filter(u => u && u._id)
+                            .filter(u => String(u._id) !== String(user._id))
+                    );
+
                 }
             } catch (err) {
                 console.error("Error cargando allUsers:", err);
