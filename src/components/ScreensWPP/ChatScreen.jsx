@@ -10,6 +10,8 @@ const ChatScreen = () => {
     const { sendMessage } = useContext(SocketContext);
     const [text, setText] = useState("");
     const [isGroupSettings, setIsGroupSettings] = useState(false);
+    const [allUsers, setAllUsers] = useState([]);
+
 
     const isAdmin = Boolean(
         selectedChat?.isGroup &&
@@ -61,6 +63,23 @@ const ChatScreen = () => {
         if (data.ok) setSelectedChat(data.group);
         else alert(data.message);
     };
+    
+    useEffect(() => {
+        const loadUsers = async () => {
+            try {
+                const res = await fetch(`${ENVIRONMENT.URL_API}/api/users`);
+                const data = await res.json();
+
+                if (data.ok) {
+                    setAllUsers(data.users.filter(u => u._id !== user._id));
+                }
+            } catch (err) {
+                console.error("Error cargando allUsers:", err);
+            }
+        };
+
+        loadUsers();
+    }, [user]);
 
     if (!selectedChat) return <p>Cargando chat...</p>;
 
