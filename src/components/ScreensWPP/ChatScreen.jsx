@@ -177,9 +177,10 @@ const ChatScreen = () => {
 
                                         {!isMine && selectedChat.isGroup && (
                                             <img
-                                                src={msg.sender?.avatar || "/default-avatar.png"}
+                                                src={msg.sender?.avatar || "https://res.cloudinary.com/dbxmirk7q/image/upload/v1765152064/avatars/default_avatar.png"}
                                                 className="msg-avatar"
                                                 alt="avatar"
+                                                onError={(e) => { e.target.src = "https://res.cloudinary.com/dbxmirk7q/image/upload/v1765152064/avatars/default_avatar.png"; }}
                                             />
                                         )}
 
